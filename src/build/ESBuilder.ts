@@ -1,11 +1,11 @@
 import envPlugin from '@chialab/esbuild-plugin-env';
 import htmlPlugin from '@chialab/esbuild-plugin-html';
 import esbuild, { type BuildOptions, type Platform } from 'esbuild';
+import { definedProps } from '../core/index.js';
 //@ts-ignore
 import copyStaticFiles from 'esbuild-copy-static-files';
 import sassPlugin from 'esbuild-plugin-sass';
 import path from 'path';
-import { definedProps } from '../core/index.js';
 
 const isProd = process.env.NODE_ENV === 'production';
 

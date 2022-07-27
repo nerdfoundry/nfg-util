@@ -2,6 +2,6 @@ version: '3.7'
 
 services:
   nfg-util:
-    command: 'npm run dev'
+    command: 'npm run dev-build'
     environment:
       - NODE_ENV=development

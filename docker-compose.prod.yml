@@ -1,0 +1,7 @@
+version: '3.7'
+
+services:
+  nfg-util:
+    command: 'npm run prod'
+    environment:
+      - NODE_ENV=production

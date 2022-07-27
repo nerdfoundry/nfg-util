@@ -1,0 +1,4 @@
+# dotfiles
+.*
+# compose files
+docker-compose*

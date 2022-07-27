@@ -6,6 +6,9 @@ services:
     container_name: nfg-util
     user: '1000'
     working_dir: '/app'
-    command: 'npm run build'
+    command: 'npm run docker-compose'
+    tty: true
+    stdin_open: true
     volumes:
       - '.:/app'
+      - '${HOME}/.npmrc-automate_nfgutils:/app/.npmrc'

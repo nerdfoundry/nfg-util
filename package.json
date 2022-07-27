@@ -1,7 +1,7 @@
 {
-  "name": "nfg-util",
+  "name": "@nfg/util",
   "description": "Utility Library for NFG products",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "license": "MIT",
   "author": "Codex <nfg.codex@outlook.com>",
   "main": "./dist/index.js",
@@ -17,7 +17,8 @@
     "utility"
   ],
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "scope": "@nfg"
   },
   "exports": {
     "./*": "./dist/*"
@@ -30,13 +31,19 @@
     }
   },
   "scripts": {
+    "docker-compose": ".scripts/docker-compose.sh",
     "clean": "rimraf ./dist",
-    "predev": "npm i; npm run clean",
-    "prebuild": "npm i; npm run clean",
-    "dev": "concurrently -r 'npm:dev:*'",
-    "build": "concurrently -r 'npm:build:*'",
-    "build:bundle": "EXTERNALS=\"./node_modules*\" FORCEBUILDONLY=1 RUNTIMEPLATFORM=node FILESRC=index.ts ts-node .scripts/build.mts",
-    "build:types": "tsc --emitDeclarationOnly --declaration"
+    "predev": "npm i --force && npm run clean",
+    "predev-build": "npm i --force && npm run clean",
+    "preprod": "NODE_ENV=development npm i --force && npm run clean",
+    "dev": "NODE_ENV=development concurrently -r 'npm:dev:*'",
+    "dev:bundle": "EXTERNALS=\"./node_modules*\" FORCEBUILDONLY=1 RUNTIMEPLATFORM=node FILESRC=index.ts nodemon -e ts,js,mjs,mts --watch ./src --exec \".scripts/build.mts\"",
+    "dev-build": "NODE_ENV=development concurrently -r 'npm:dev-build:*'",
+    "dev-build:bundle": "EXTERNALS=\"./node_modules*\" FORCEBUILDONLY=1 RUNTIMEPLATFORM=node FILESRC=index.ts .scripts/build.mts",
+    "dev-build:types": "tsc --emitDeclarationOnly --declaration",
+    "prod": "NODE_ENV=production concurrently -r 'npm:prod:*'",
+    "prod:bundle": "EXTERNALS=\"./node_modules*\" RUNTIMEPLATFORM=node FILESRC=index.ts .scripts/build.mts",
+    "prod:types": "tsc --emitDeclarationOnly --declaration"
   },
   "devDependencies": {
     "@chialab/esbuild-plugin-env": "^0.16.0",
@@ -46,8 +53,7 @@
     "esbuild": "^0.14.50",
     "esbuild-copy-static-files": "^0.1.0",
     "esbuild-plugin-sass": "^1.0.1",
-    "rimraf": "^3.0.2",
-    "ts-node": "^10.9.1",
-    "tsconfig-paths": "^4.0.0"
+    "nodemon": "^2.0.19",
+    "ts-node": "^10.9.1"
   }
 }

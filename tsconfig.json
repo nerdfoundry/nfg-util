@@ -1,15 +1,13 @@
 {
   "ts-node": {
-    // Do not forget to `npm i -D tsconfig-paths`
-    "require": ["tsconfig-paths/register"],
-    "files": true,
-    "esm": true
+    "esm": true,
+    "files": true
   },
 
-  "include": ["src/**/*", "tests/**/*", "src/index.d.ts"],
+  "include": ["src/**/*", "tests/**/*"],
   "exclude": ["node_modules", "dist"],
+
   "compilerOptions": {
-    "rootDir": "./src",
     "allowSyntheticDefaultImports": true,
     "checkJs": true,
     "esModuleInterop": true,
@@ -21,6 +19,7 @@
     "outDir": "./dist",
     "preserveValueImports": true,
     "resolveJsonModule": true,
+    "rootDir": "./src",
     "skipLibCheck": true,
     "strict": true,
     "target": "esnext",
