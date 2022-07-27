@@ -1,7 +1,9 @@
 {
   "name": "nfg-util",
+  "description": "Utility Library for NFG products",
   "version": "1.0.0",
-  "description": "",
+  "license": "MIT",
+  "author": "Codex <nfg.codex@outlook.com>",
   "main": "./dist/index.js",
   "type": "module",
   "keywords": [
@@ -14,8 +16,19 @@
     "tsconfig",
     "utility"
   ],
-  "author": "Codex <nfg.codex@outlook.com",
-  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    "./*": "./dist/*"
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "dist/*"
+      ]
+    }
+  },
   "scripts": {
     "clean": "rimraf ./dist",
     "predev": "npm i; npm run clean",
