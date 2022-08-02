@@ -4,7 +4,7 @@
     "files": true
   },
 
-  "include": ["src/**/*", "tests/**/*"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"],
 
   "compilerOptions": {
@@ -22,7 +22,6 @@
     "rootDir": "./src",
     "skipLibCheck": true,
     "strict": true,
-    "target": "esnext",
-    "types": ["node"]
+    "target": "esnext"
   }
 }

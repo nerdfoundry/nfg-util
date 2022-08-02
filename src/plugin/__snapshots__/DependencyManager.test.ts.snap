@@ -1,0 +1,476 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Dependencymanager Build Accessor Chain Map should build a proper Plugin Dependency tree from Plugin Names 1`] = `
+Object {
+  "Plugin1-v0.0.1": Array [
+    "Plugin2-v0.0.1",
+  ],
+  "Plugin3-v0.0.1": Array [
+    "Plugin1-v0.0.1",
+    "Plugin4-v0.0.1",
+  ],
+  "Plugin4-v0.0.1": Array [
+    "Plugin2-v0.0.1",
+  ],
+}
+`;
+
+exports[`Dependencymanager Build Plugin Name Map should return a named mapping of Plugin Behaviours 1`] = `
+Object {
+  "Plugin1-v0.0.1": Array [
+    Object {
+      "manifest": Object {
+        "accessors": Object {
+          "plug2": "plugin2-behaviour",
+        },
+        "behaviours": Array [
+          "plugin1-behaviour",
+          "common1",
+        ],
+        "name": "Plugin1",
+        "pluginPath": "",
+        "type": "SERVICE",
+        "version": "0.0.1",
+      },
+      "pluginDefinition": [Function],
+    },
+  ],
+  "Plugin2-v0.0.1": Array [
+    Object {
+      "manifest": Object {
+        "behaviours": Array [
+          "plugin2-behaviour",
+          "common1",
+        ],
+        "name": "Plugin2",
+        "pluginPath": "",
+        "type": "SERVICE",
+        "version": "0.0.1",
+      },
+      "pluginDefinition": [Function],
+    },
+  ],
+  "Plugin3-v0.0.1": Array [
+    Object {
+      "manifest": Object {
+        "accessors": Object {
+          "plug1": "Plugin1-v0.0.1",
+          "plug4": "plugin4-behaviour",
+        },
+        "behaviours": Array [
+          "plugin3-behaviour",
+        ],
+        "name": "Plugin3",
+        "pluginPath": "",
+        "type": "SERVICE",
+        "version": "0.0.1",
+      },
+      "pluginDefinition": [Function],
+    },
+  ],
+  "Plugin4-v0.0.1": Array [
+    Object {
+      "manifest": Object {
+        "accessors": Object {
+          "plug2": "Plugin2-v0.0.1",
+        },
+        "behaviours": Array [
+          "plugin4-behaviour",
+        ],
+        "name": "Plugin4",
+        "pluginPath": "",
+        "type": "SERVICE",
+        "version": "0.0.1",
+      },
+      "pluginDefinition": [Function],
+    },
+  ],
+  "common1": Array [
+    Object {
+      "manifest": Object {
+        "accessors": Object {
+          "plug2": "plugin2-behaviour",
+        },
+        "behaviours": Array [
+          "plugin1-behaviour",
+          "common1",
+        ],
+        "name": "Plugin1",
+        "pluginPath": "",
+        "type": "SERVICE",
+        "version": "0.0.1",
+      },
+      "pluginDefinition": [Function],
+    },
+    Object {
+      "manifest": Object {
+        "behaviours": Array [
+          "plugin2-behaviour",
+          "common1",
+        ],
+        "name": "Plugin2",
+        "pluginPath": "",
+        "type": "SERVICE",
+        "version": "0.0.1",
+      },
+      "pluginDefinition": [Function],
+    },
+  ],
+  "plugin1-behaviour": Array [
+    Object {
+      "manifest": Object {
+        "accessors": Object {
+          "plug2": "plugin2-behaviour",
+        },
+        "behaviours": Array [
+          "plugin1-behaviour",
+          "common1",
+        ],
+        "name": "Plugin1",
+        "pluginPath": "",
+        "type": "SERVICE",
+        "version": "0.0.1",
+      },
+      "pluginDefinition": [Function],
+    },
+  ],
+  "plugin2-behaviour": Array [
+    Object {
+      "manifest": Object {
+        "behaviours": Array [
+          "plugin2-behaviour",
+          "common1",
+        ],
+        "name": "Plugin2",
+        "pluginPath": "",
+        "type": "SERVICE",
+        "version": "0.0.1",
+      },
+      "pluginDefinition": [Function],
+    },
+  ],
+  "plugin3-behaviour": Array [
+    Object {
+      "manifest": Object {
+        "accessors": Object {
+          "plug1": "Plugin1-v0.0.1",
+          "plug4": "plugin4-behaviour",
+        },
+        "behaviours": Array [
+          "plugin3-behaviour",
+        ],
+        "name": "Plugin3",
+        "pluginPath": "",
+        "type": "SERVICE",
+        "version": "0.0.1",
+      },
+      "pluginDefinition": [Function],
+    },
+  ],
+  "plugin4-behaviour": Array [
+    Object {
+      "manifest": Object {
+        "accessors": Object {
+          "plug2": "Plugin2-v0.0.1",
+        },
+        "behaviours": Array [
+          "plugin4-behaviour",
+        ],
+        "name": "Plugin4",
+        "pluginPath": "",
+        "type": "SERVICE",
+        "version": "0.0.1",
+      },
+      "pluginDefinition": [Function],
+    },
+  ],
+}
+`;
+
+exports[`Dependencymanager Build Plugin Name Map should return a named mapping of all Plugins 1`] = `
+Object {
+  "Plugin1-v0.0.1": Object {
+    "manifest": Object {
+      "accessors": Object {
+        "plug2": "plugin2-behaviour",
+      },
+      "behaviours": Array [
+        "plugin1-behaviour",
+        "common1",
+      ],
+      "name": "Plugin1",
+      "pluginPath": "",
+      "type": "SERVICE",
+      "version": "0.0.1",
+    },
+    "pluginDefinition": [Function],
+  },
+  "Plugin2-v0.0.1": Object {
+    "manifest": Object {
+      "behaviours": Array [
+        "plugin2-behaviour",
+        "common1",
+      ],
+      "name": "Plugin2",
+      "pluginPath": "",
+      "type": "SERVICE",
+      "version": "0.0.1",
+    },
+    "pluginDefinition": [Function],
+  },
+  "Plugin3-v0.0.1": Object {
+    "manifest": Object {
+      "accessors": Object {
+        "plug1": "Plugin1-v0.0.1",
+        "plug4": "plugin4-behaviour",
+      },
+      "behaviours": Array [
+        "plugin3-behaviour",
+      ],
+      "name": "Plugin3",
+      "pluginPath": "",
+      "type": "SERVICE",
+      "version": "0.0.1",
+    },
+    "pluginDefinition": [Function],
+  },
+  "Plugin4-v0.0.1": Object {
+    "manifest": Object {
+      "accessors": Object {
+        "plug2": "Plugin2-v0.0.1",
+      },
+      "behaviours": Array [
+        "plugin4-behaviour",
+      ],
+      "name": "Plugin4",
+      "pluginPath": "",
+      "type": "SERVICE",
+      "version": "0.0.1",
+    },
+    "pluginDefinition": [Function],
+  },
+}
+`;
+
+exports[`Dependencymanager Loading Plugin Definitions should load the entire Plugin Dependency tree into a single Promise result 1`] = `
+Object {
+  "Plugin1-v0.0.1": Promise {},
+  "Plugin2-v0.0.1": Promise {},
+}
+`;
+
+exports[`Dependencymanager Loading Plugin Definitions should not allow known plugins to be re-loaded 1`] = `
+Object {
+  "Plugin1-v0.0.1": Promise {},
+}
+`;
+
+exports[`Dependencymanager Loading Plugin Definitions should not allow known plugins to be re-loaded 2`] = `
+Object {
+  "Plugin1-v0.0.1": [Error: [DependencyChainError] - Plugin1-v0.0.1 has failed an entire dependency chain],
+}
+`;
+
+exports[`Dependencymanager Loading a Chain Map should load an entire Chain Map from the Plugin Name Map 1`] = `
+Array [
+  pluginDef {
+    "accessors": Object {},
+    "enabled": false,
+    "host": PluginHost {
+      "getOption": [MockFunction],
+      "setOption": [MockFunction],
+    },
+    "manifest": Object {
+      "accessors": Object {
+        "plug2": "plugin2-behaviour",
+      },
+      "behaviours": Array [
+        "plugin1-behaviour",
+        "common1",
+        "Plugin1",
+      ],
+      "name": "Plugin1",
+      "pluginPath": "",
+      "type": "SERVICE",
+      "version": "0.0.1",
+    },
+    "status": 0,
+  },
+  pluginDef {
+    "accessors": Object {},
+    "enabled": false,
+    "host": PluginHost {
+      "getOption": [MockFunction],
+      "setOption": [MockFunction],
+    },
+    "manifest": Object {
+      "behaviours": Array [
+        "plugin2-behaviour",
+        "common1",
+        "Plugin2",
+      ],
+      "name": "Plugin2",
+      "pluginPath": "",
+      "type": "SERVICE",
+      "version": "0.0.1",
+    },
+    "status": 0,
+  },
+  pluginDef {
+    "accessors": Object {},
+    "enabled": false,
+    "host": PluginHost {
+      "getOption": [MockFunction],
+      "setOption": [MockFunction],
+    },
+    "manifest": Object {
+      "accessors": Object {
+        "plug1": "Plugin1-v0.0.1",
+        "plug4": "plugin4-behaviour",
+      },
+      "behaviours": Array [
+        "plugin3-behaviour",
+        "Plugin3",
+      ],
+      "name": "Plugin3",
+      "pluginPath": "",
+      "type": "SERVICE",
+      "version": "0.0.1",
+    },
+    "status": 0,
+  },
+  pluginDef {
+    "accessors": Object {},
+    "enabled": false,
+    "host": PluginHost {
+      "getOption": [MockFunction],
+      "setOption": [MockFunction],
+    },
+    "manifest": Object {
+      "accessors": Object {
+        "plug2": "Plugin2-v0.0.1",
+      },
+      "behaviours": Array [
+        "plugin4-behaviour",
+        "Plugin4",
+      ],
+      "name": "Plugin4",
+      "pluginPath": "",
+      "type": "SERVICE",
+      "version": "0.0.1",
+    },
+    "status": 0,
+  },
+]
+`;
+
+exports[`Dependencymanager Loading a Chain Map should load an entire Chain Map from the Plugin Name Map 2`] = `
+Object {
+  "Plugin1-v0.0.1": Object {
+    "manifest": Object {
+      "accessors": Object {
+        "plug2": "plugin2-behaviour",
+      },
+      "behaviours": Array [
+        "plugin1-behaviour",
+        "common1",
+        "Plugin1",
+      ],
+      "name": "Plugin1",
+      "pluginPath": "",
+      "type": "SERVICE",
+      "version": "0.0.1",
+    },
+    "pluginDefinition": [Function],
+  },
+  "Plugin2-v0.0.1": Object {
+    "manifest": Object {
+      "behaviours": Array [
+        "plugin2-behaviour",
+        "common1",
+        "Plugin2",
+      ],
+      "name": "Plugin2",
+      "pluginPath": "",
+      "type": "SERVICE",
+      "version": "0.0.1",
+    },
+    "pluginDefinition": [Function],
+  },
+  "Plugin3-v0.0.1": Object {
+    "manifest": Object {
+      "accessors": Object {
+        "plug1": "Plugin1-v0.0.1",
+        "plug4": "plugin4-behaviour",
+      },
+      "behaviours": Array [
+        "plugin3-behaviour",
+        "Plugin3",
+      ],
+      "name": "Plugin3",
+      "pluginPath": "",
+      "type": "SERVICE",
+      "version": "0.0.1",
+    },
+    "pluginDefinition": [Function],
+  },
+  "Plugin4-v0.0.1": Object {
+    "manifest": Object {
+      "accessors": Object {
+        "plug2": "Plugin2-v0.0.1",
+      },
+      "behaviours": Array [
+        "plugin4-behaviour",
+        "Plugin4",
+      ],
+      "name": "Plugin4",
+      "pluginPath": "",
+      "type": "SERVICE",
+      "version": "0.0.1",
+    },
+    "pluginDefinition": [Function],
+  },
+}
+`;
+
+exports[`Dependencymanager Loading a Chain Map should properly identify individual failed plugins upon loading 1`] = `
+Object {
+  "Plugin2-v0.0.1": [Error: [DependencyChainError] - Plugin2-v0.0.1 has failed an entire dependency chain],
+}
+`;
+
+exports[`Dependencymanager Utilities should build an Alias Map for Accessors 1`] = `
+Object {
+  "plug2": Array [
+    pluginDef {
+      "accessors": Object {},
+      "enabled": false,
+      "host": PluginHost {
+        "getOption": [MockFunction],
+        "setOption": [MockFunction],
+      },
+      "manifest": Object {
+        "behaviours": Array [
+          "plugin2-behaviour",
+          "common1",
+          "Plugin2",
+        ],
+        "name": "Plugin2",
+        "pluginPath": "",
+        "type": "SERVICE",
+        "version": "0.0.1",
+      },
+      "status": 0,
+    },
+  ],
+}
+`;
+
+exports[`Dependencymanager Utilities should return a list of all Accessors within a group of Plugins 1`] = `
+Array [
+  "Plugin1-v0.0.1",
+  "Plugin2-v0.0.1",
+  "plugin2-behaviour",
+  "plugin4-behaviour",
+]
+`;

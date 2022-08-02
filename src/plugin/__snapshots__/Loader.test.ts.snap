@@ -1,0 +1,35 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PluginLoader Plugin Scanning should find all Plugins in a Scan Directory 1`] = `
+Array [
+  Object {},
+  Object {},
+]
+`;
+
+exports[`PluginLoader Plugin Scanning should find all Plugins in all Scan Directories 1`] = `
+Array [
+  plugin1/index.plugin.ts,
+  plugin2/index.plugin.ts,
+]
+`;
+
+exports[`PluginLoader Plugin Scanning should return properly found Plugins in a Directory 1`] = `
+Object {
+  name: FakePlugin,
+  pluginPath: tsPluginDir,
+  type: SERVICE,
+  version: 1.0.0,
+}
+`;
+
+exports[`PluginLoader Plugin Scanning should return properly found Plugins in a Directory 2`] = `
+Object {
+  name: FakePlugin,
+  pluginPath: jsPluginDir,
+  type: SERVICE,
+  version: 1.0.0,
+}
+`;
+
+exports[`PluginLoader Plugin Scanning should skip non-directories in a Scan Directory 1`] = `Array []`;
