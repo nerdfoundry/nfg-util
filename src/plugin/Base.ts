@@ -1,5 +1,5 @@
 import { AlreadyEnabledError, NotEnabledError } from './Error';
-import PluginHost from './Host';
+import Host from './Host';
 
 export enum PluginType {
   SERVICE = 'SERVICE',
@@ -17,7 +17,7 @@ export enum PluginStatus {
 type Behavior = string;
 type AccessorAlias = string;
 
-export interface PluginManifest {
+export interface Manifest {
   // Accessor Manifest Config
   accessors?: Record<AccessorAlias, Behavior>;
   behaviours?: Array<Behavior>;
@@ -28,21 +28,21 @@ export interface PluginManifest {
   // views?: object; //TODO: Type this out with sub-views
 }
 
-export type AccessorAliasMap = Record<AccessorAlias, Array<PluginBase>>;
+export type AccessorAliasMap = Record<AccessorAlias, Array<Base>>;
 
 export interface IPluginOptions {
-  host: PluginHost;
-  manifest: PluginManifest;
+  host: Host;
+  manifest: Manifest;
   // Resolved Accessors, from DepMgr
   accessors: AccessorAliasMap;
 }
 
-export default class PluginBase {
+export default class Base {
   static ROOT_KEY: string = 'Plugins';
 
   accessors: AccessorAliasMap;
-  host: PluginHost;
-  manifest: PluginManifest;
+  host: Host;
+  manifest: Manifest;
   enabled: boolean = false;
   status: PluginStatus = PluginStatus.STOPPED;
 
@@ -108,10 +108,10 @@ export default class PluginBase {
   }
 
   getSetting(settingPath: string) {
-    return this.host.getOption(`${PluginBase.ROOT_KEY}.${this.manifest.name}.${settingPath}`);
+    return this.host.getOption(`${Base.ROOT_KEY}.${this.manifest.name}.${settingPath}`);
   }
 
   setSetting(settingPath: string, val: any) {
-    this.host.setOption(`${PluginBase.ROOT_KEY}.${this.manifest.name}.${settingPath}`, val);
+    this.host.setOption(`${Base.ROOT_KEY}.${this.manifest.name}.${settingPath}`, val);
   }
 }

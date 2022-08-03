@@ -4,7 +4,7 @@
     "files": true
   },
 
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "tests/**/*", "__mocks__"],
   "exclude": ["node_modules", "dist"],
 
   "compilerOptions": {
@@ -19,9 +19,9 @@
     "outDir": "./dist",
     "preserveValueImports": true,
     "resolveJsonModule": true,
-    "rootDir": "./src",
     "skipLibCheck": true,
     "strict": true,
-    "target": "esnext"
+    "target": "esnext",
+    "types": ["vitest/globals"]
   }
 }

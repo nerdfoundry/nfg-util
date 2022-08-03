@@ -2,7 +2,7 @@ import { BrowserWindow, ipcMain, ipcRenderer, type IpcMainEvent, type IpcRendere
 
 type IPCHandler = ((event: IpcRendererEvent, ...args: any[]) => void) & ((event: IpcMainEvent, ...args: any[]) => void);
 
-export default class PluginRelay {
+export default class Relay {
   constructor() {
     if (this.isMain) {
       //TODO Determine if this is necessary for OTHER windows

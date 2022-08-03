@@ -1,41 +1,32 @@
-import PluginBase, { PluginType, type PluginManifest } from './Base';
+import Logger from '../../src/core/Logger.js';
+import { PluginType, type Manifest } from '../../src/index.js';
+import Base from '../../src/plugin/Base.js';
 import DependencyManager, {
   DependencyChainError,
   type BehaviourNameMap,
   type PluginNameMap
-} from './DependencyManager';
-import PluginHost from './Host';
-import { type ILoaderMeta } from './Loader';
+} from '../../src/plugin/DependencyManager.js';
+import Host from '../../src/plugin/Host.js';
+import type { ILoaderMeta } from '../../src/plugin/Loader.js';
 
-jest.mock('./Host');
-jest.mock('./Relay');
+vi.useFakeTimers({ shouldAdvanceTime: true });
+vi.spyOn(global, 'setTimeout');
 
-jest.mock('../core/Logger', () => {
-  const Mock: any = jest.fn();
-  // const Mock: any = console.log;
-  // Mock.extend = msg => {
-  //   const prevExtend = Mock.extend;
-  //   const extended = Mock.bind(console, msg, '->');
-  //   extended.extend = prevExtend;
-  //   return extended;
-  // };
+vi.mock('../../src/core/Logger');
+vi.mock('../../src/plugin/Host.js');
+vi.mock('../../src/plugin/Relay');
 
-  Mock.extend = jest.fn().mockReturnValue(Mock);
-
-  return Mock;
-});
-
-describe('Dependencymanager', () => {
-  let host: PluginHost;
+describe('DependencyManager', () => {
+  let host: Host;
   let mgr: DependencyManager;
 
-  let manifest1: PluginManifest,
-    manifest2: PluginManifest,
-    manifest3: PluginManifest,
-    manifest4: PluginManifest,
-    manifest5: PluginManifest,
-    manifest6: PluginManifest,
-    manifest7: PluginManifest;
+  let manifest1: Manifest,
+    manifest2: Manifest,
+    manifest3: Manifest,
+    manifest4: Manifest,
+    manifest5: Manifest,
+    manifest6: Manifest,
+    manifest7: Manifest;
   let loaderMeta1: ILoaderMeta,
     loaderMeta2: ILoaderMeta,
     loaderMeta3: ILoaderMeta,
@@ -48,16 +39,16 @@ describe('Dependencymanager', () => {
   let pluginNames: Array<string>;
   let metaList: Array<ILoaderMeta>;
 
-  jest.useFakeTimers();
-  jest.spyOn(global, 'setTimeout');
-
   beforeEach(() => {
-    jest.spyOn(console, 'log').mockImplementation(jest.fn());
+    // Hide logging errors via DEBUG
+    vi.spyOn(console, 'log').mockImplementation(() => {});
 
-    host = new PluginHost();
+    (Logger as any).wtf = true;
+
+    host = new Host();
     mgr = new DependencyManager(host);
 
-    const pluginDef = class extends PluginBase {};
+    const pluginDef = class extends Base {};
 
     manifest1 = {
       accessors: { plug2: 'plugin2-behaviour' },
@@ -183,21 +174,21 @@ describe('Dependencymanager', () => {
     metaList.concat([loaderMeta5, loaderMeta6, loaderMeta7]).forEach((loaderMeta: ILoaderMeta) => {
       const pluginName = loaderMeta.manifest.name;
       loaderMeta.pluginDefinition.prototype.manifest = loaderMeta.manifest;
-      loaderMeta.pluginDefinition.prototype.enable = jest
+      loaderMeta.pluginDefinition.prototype.enable = vi
         .fn()
         .mockReturnValue(Promise.resolve(`pluginEnabled: ${pluginName}`));
-      loaderMeta.pluginDefinition.prototype.start = jest
+      loaderMeta.pluginDefinition.prototype.start = vi
         .fn()
         .mockReturnValue(Promise.resolve(`pluginStarted: ${pluginName}`));
-      loaderMeta.pluginDefinition.prototype.stop = jest
+      loaderMeta.pluginDefinition.prototype.stop = vi
         .fn()
         .mockReturnValue(Promise.resolve(`pluginStopped: ${pluginName}`));
     });
 
-    loaderMeta2.pluginDefinition.prototype.start = jest
+    loaderMeta2.pluginDefinition.prototype.start = vi
       .fn()
       .mockReturnValue(
-        new Promise(r => setTimeout(r.bind(r, `pluginStarted [delayed]: ${loaderMeta2.manifest.name}`), 1000))
+        new Promise(r => setTimeout(() => r(`pluginStarted [delayed]: ${loaderMeta2.manifest.name}`), 1000))
       );
 
     mgr.behaviourNameMap = behaviourNameMap;
@@ -222,8 +213,8 @@ describe('Dependencymanager', () => {
 
       const aliases = await mgr.mapAccessorAliases(manifest1.accessors!);
 
-      (host.getOption as any).mockRestore();
-      (host.setOption as any).mockRestore();
+      // (host.getOption as any).mockRestore();
+      // (host.setOption as any).mockRestore();
 
       await expect(aliases).toMatchSnapshot();
     });
@@ -290,7 +281,7 @@ describe('Dependencymanager', () => {
   describe('Loading a Chain Map', () => {
     it('should load an entire Chain Map from the Plugin Name Map', async () => {
       const loadMap: Record<string, ILoaderMeta> = {};
-      jest.spyOn(mgr, 'loadPluginInstance').mockImplementation(async pluginName => {
+      vi.spyOn(mgr, 'loadPluginInstance').mockImplementation(async pluginName => {
         if (!loadMap[pluginName]) {
           loadMap[pluginName] = await pluginNameMap[pluginName];
         }
@@ -316,8 +307,8 @@ describe('Dependencymanager', () => {
 
       expect(mgr.loadPluginInstance).toHaveBeenCalledTimes(4);
 
-      (host.getOption as any).mockRestore();
-      (host.setOption as any).mockRestore();
+      // (host.getOption as any).mockRestore();
+      // (host.setOption as any).mockRestore();
 
       expect(loadChain).toMatchSnapshot();
       expect(loadMap).toMatchSnapshot(); //normally would be mgr.loadMap, but we're mocking impl
@@ -326,7 +317,7 @@ describe('Dependencymanager', () => {
     it('should properly identify individual failed plugins upon loading', () => {
       const failMap: Record<string, DependencyChainError> = {};
 
-      jest.spyOn(mgr, 'loadPluginInstance').mockImplementation(pluginName => {
+      vi.spyOn(mgr, 'loadPluginInstance').mockImplementation(pluginName => {
         const newError = new DependencyChainError(pluginName, new Error('Test Error'));
         failMap[pluginName] = newError;
         throw newError;
@@ -355,7 +346,7 @@ describe('Dependencymanager', () => {
 
   describe('Loading Plugin Instances', () => {
     it('should load a Plugin Instance', async () => {
-      jest.spyOn(mgr, 'mapAccessorAliases').mockImplementation(async () => {
+      vi.spyOn(mgr, 'mapAccessorAliases').mockImplementation(async () => {
         return {
           plug2: [
             new loaderMeta2.pluginDefinition({
@@ -374,7 +365,7 @@ describe('Dependencymanager', () => {
     it('should throw an Error when a Plugin load fails to initialize', async () => {
       const loaderMeta: any = {
         manifest: loaderMeta1.manifest,
-        pluginDefinition: jest.fn().mockImplementation(() => {
+        pluginDefinition: vi.fn().mockImplementation(() => {
           throw new Error('Test Error: PluginLoadError');
         })
       };
@@ -400,13 +391,10 @@ describe('Dependencymanager', () => {
   });
 
   describe('Loading Plugin Definitions', () => {
-    it.only('should load the entire Plugin Dependency tree into a single Promise result', async () => {
-      const loadMapPromise = mgr.loadPluginDefinitions([loaderMeta2, loaderMeta1]);
-
-      const loadMap = await loadMapPromise;
+    it('should load the entire Plugin Dependency tree into a single Promise result', async () => {
+      const loadMap = await mgr.loadPluginDefinitions([loaderMeta2, loaderMeta1]);
 
       expect(setTimeout).toHaveBeenCalledTimes(1);
-
       expect(loadMap).toMatchSnapshot();
     });
 

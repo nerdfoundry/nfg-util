@@ -1,29 +1,29 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1
 
-exports[`Dependencymanager Build Accessor Chain Map should build a proper Plugin Dependency tree from Plugin Names 1`] = `
-Object {
-  "Plugin1-v0.0.1": Array [
+exports[`DependencyManager > Build Accessor Chain Map > should build a proper Plugin Dependency tree from Plugin Names 1`] = `
+{
+  "Plugin1-v0.0.1": [
     "Plugin2-v0.0.1",
   ],
-  "Plugin3-v0.0.1": Array [
+  "Plugin3-v0.0.1": [
     "Plugin1-v0.0.1",
     "Plugin4-v0.0.1",
   ],
-  "Plugin4-v0.0.1": Array [
+  "Plugin4-v0.0.1": [
     "Plugin2-v0.0.1",
   ],
 }
 `;
 
-exports[`Dependencymanager Build Plugin Name Map should return a named mapping of Plugin Behaviours 1`] = `
-Object {
-  "Plugin1-v0.0.1": Array [
-    Object {
-      "manifest": Object {
-        "accessors": Object {
+exports[`DependencyManager > Build Plugin Name Map > should return a named mapping of Plugin Behaviours 1`] = `
+{
+  "Plugin1-v0.0.1": [
+    {
+      "manifest": {
+        "accessors": {
           "plug2": "plugin2-behaviour",
         },
-        "behaviours": Array [
+        "behaviours": [
           "plugin1-behaviour",
           "common1",
         ],
@@ -35,10 +35,10 @@ Object {
       "pluginDefinition": [Function],
     },
   ],
-  "Plugin2-v0.0.1": Array [
-    Object {
-      "manifest": Object {
-        "behaviours": Array [
+  "Plugin2-v0.0.1": [
+    {
+      "manifest": {
+        "behaviours": [
           "plugin2-behaviour",
           "common1",
         ],
@@ -50,14 +50,14 @@ Object {
       "pluginDefinition": [Function],
     },
   ],
-  "Plugin3-v0.0.1": Array [
-    Object {
-      "manifest": Object {
-        "accessors": Object {
+  "Plugin3-v0.0.1": [
+    {
+      "manifest": {
+        "accessors": {
           "plug1": "Plugin1-v0.0.1",
           "plug4": "plugin4-behaviour",
         },
-        "behaviours": Array [
+        "behaviours": [
           "plugin3-behaviour",
         ],
         "name": "Plugin3",
@@ -68,13 +68,13 @@ Object {
       "pluginDefinition": [Function],
     },
   ],
-  "Plugin4-v0.0.1": Array [
-    Object {
-      "manifest": Object {
-        "accessors": Object {
+  "Plugin4-v0.0.1": [
+    {
+      "manifest": {
+        "accessors": {
           "plug2": "Plugin2-v0.0.1",
         },
-        "behaviours": Array [
+        "behaviours": [
           "plugin4-behaviour",
         ],
         "name": "Plugin4",
@@ -85,13 +85,13 @@ Object {
       "pluginDefinition": [Function],
     },
   ],
-  "common1": Array [
-    Object {
-      "manifest": Object {
-        "accessors": Object {
+  "common1": [
+    {
+      "manifest": {
+        "accessors": {
           "plug2": "plugin2-behaviour",
         },
-        "behaviours": Array [
+        "behaviours": [
           "plugin1-behaviour",
           "common1",
         ],
@@ -102,9 +102,9 @@ Object {
       },
       "pluginDefinition": [Function],
     },
-    Object {
-      "manifest": Object {
-        "behaviours": Array [
+    {
+      "manifest": {
+        "behaviours": [
           "plugin2-behaviour",
           "common1",
         ],
@@ -116,13 +116,13 @@ Object {
       "pluginDefinition": [Function],
     },
   ],
-  "plugin1-behaviour": Array [
-    Object {
-      "manifest": Object {
-        "accessors": Object {
+  "plugin1-behaviour": [
+    {
+      "manifest": {
+        "accessors": {
           "plug2": "plugin2-behaviour",
         },
-        "behaviours": Array [
+        "behaviours": [
           "plugin1-behaviour",
           "common1",
         ],
@@ -134,10 +134,10 @@ Object {
       "pluginDefinition": [Function],
     },
   ],
-  "plugin2-behaviour": Array [
-    Object {
-      "manifest": Object {
-        "behaviours": Array [
+  "plugin2-behaviour": [
+    {
+      "manifest": {
+        "behaviours": [
           "plugin2-behaviour",
           "common1",
         ],
@@ -149,14 +149,14 @@ Object {
       "pluginDefinition": [Function],
     },
   ],
-  "plugin3-behaviour": Array [
-    Object {
-      "manifest": Object {
-        "accessors": Object {
+  "plugin3-behaviour": [
+    {
+      "manifest": {
+        "accessors": {
           "plug1": "Plugin1-v0.0.1",
           "plug4": "plugin4-behaviour",
         },
-        "behaviours": Array [
+        "behaviours": [
           "plugin3-behaviour",
         ],
         "name": "Plugin3",
@@ -167,13 +167,13 @@ Object {
       "pluginDefinition": [Function],
     },
   ],
-  "plugin4-behaviour": Array [
-    Object {
-      "manifest": Object {
-        "accessors": Object {
+  "plugin4-behaviour": [
+    {
+      "manifest": {
+        "accessors": {
           "plug2": "Plugin2-v0.0.1",
         },
-        "behaviours": Array [
+        "behaviours": [
           "plugin4-behaviour",
         ],
         "name": "Plugin4",
@@ -187,14 +187,14 @@ Object {
 }
 `;
 
-exports[`Dependencymanager Build Plugin Name Map should return a named mapping of all Plugins 1`] = `
-Object {
-  "Plugin1-v0.0.1": Object {
-    "manifest": Object {
-      "accessors": Object {
+exports[`DependencyManager > Build Plugin Name Map > should return a named mapping of all Plugins 1`] = `
+{
+  "Plugin1-v0.0.1": {
+    "manifest": {
+      "accessors": {
         "plug2": "plugin2-behaviour",
       },
-      "behaviours": Array [
+      "behaviours": [
         "plugin1-behaviour",
         "common1",
       ],
@@ -205,9 +205,9 @@ Object {
     },
     "pluginDefinition": [Function],
   },
-  "Plugin2-v0.0.1": Object {
-    "manifest": Object {
-      "behaviours": Array [
+  "Plugin2-v0.0.1": {
+    "manifest": {
+      "behaviours": [
         "plugin2-behaviour",
         "common1",
       ],
@@ -218,13 +218,13 @@ Object {
     },
     "pluginDefinition": [Function],
   },
-  "Plugin3-v0.0.1": Object {
-    "manifest": Object {
-      "accessors": Object {
+  "Plugin3-v0.0.1": {
+    "manifest": {
+      "accessors": {
         "plug1": "Plugin1-v0.0.1",
         "plug4": "plugin4-behaviour",
       },
-      "behaviours": Array [
+      "behaviours": [
         "plugin3-behaviour",
       ],
       "name": "Plugin3",
@@ -234,12 +234,12 @@ Object {
     },
     "pluginDefinition": [Function],
   },
-  "Plugin4-v0.0.1": Object {
-    "manifest": Object {
-      "accessors": Object {
+  "Plugin4-v0.0.1": {
+    "manifest": {
+      "accessors": {
         "plug2": "Plugin2-v0.0.1",
       },
-      "behaviours": Array [
+      "behaviours": [
         "plugin4-behaviour",
       ],
       "name": "Plugin4",
@@ -252,39 +252,107 @@ Object {
 }
 `;
 
-exports[`Dependencymanager Loading Plugin Definitions should load the entire Plugin Dependency tree into a single Promise result 1`] = `
-Object {
+exports[`DependencyManager > Loading Plugin Definitions > should load the entire Plugin Dependency tree into a single Promise result 1`] = `
+pluginDef {
+  "accessors": null,
+  "enabled": false,
+  "host": Host {
+    "relay": Relay {},
+  },
+  "manifest": {
+    "behaviours": [
+      "plugin2-behaviour",
+      "common1",
+      "Plugin2",
+    ],
+    "name": "Plugin2",
+    "pluginPath": "",
+    "type": "SERVICE",
+    "version": "0.0.1",
+  },
+  "status": 0,
+}
+`;
+
+exports[`DependencyManager > Loading Plugin Definitions > should load the entire Plugin Dependency tree into a single Promise result 2`] = `
+pluginDef {
+  "accessors": {
+    "plug2": [
+      pluginDef {
+        "accessors": {},
+        "enabled": false,
+        "host": Host {
+          "relay": Relay {},
+        },
+        "manifest": {
+          "behaviours": [
+            "plugin2-behaviour",
+            "common1",
+            "Plugin2",
+          ],
+          "name": "Plugin2",
+          "pluginPath": "",
+          "type": "SERVICE",
+          "version": "0.0.1",
+        },
+        "status": 0,
+      },
+    ],
+  },
+  "enabled": false,
+  "host": Host {
+    "relay": Relay {},
+  },
+  "manifest": {
+    "accessors": {
+      "plug2": "plugin2-behaviour",
+    },
+    "behaviours": [
+      "plugin1-behaviour",
+      "common1",
+      "Plugin1",
+    ],
+    "name": "Plugin1",
+    "pluginPath": "",
+    "type": "SERVICE",
+    "version": "0.0.1",
+  },
+  "status": 0,
+}
+`;
+
+exports[`DependencyManager > Loading Plugin Definitions > should load the entire Plugin Dependency tree into a single Promise result 3`] = `
+{
   "Plugin1-v0.0.1": Promise {},
   "Plugin2-v0.0.1": Promise {},
 }
 `;
 
-exports[`Dependencymanager Loading Plugin Definitions should not allow known plugins to be re-loaded 1`] = `
-Object {
+exports[`DependencyManager > Loading Plugin Definitions > should not allow known plugins to be re-loaded 1`] = `
+{
   "Plugin1-v0.0.1": Promise {},
 }
 `;
 
-exports[`Dependencymanager Loading Plugin Definitions should not allow known plugins to be re-loaded 2`] = `
-Object {
+exports[`DependencyManager > Loading Plugin Definitions > should not allow known plugins to be re-loaded 2`] = `
+{
   "Plugin1-v0.0.1": [Error: [DependencyChainError] - Plugin1-v0.0.1 has failed an entire dependency chain],
 }
 `;
 
-exports[`Dependencymanager Loading a Chain Map should load an entire Chain Map from the Plugin Name Map 1`] = `
-Array [
+exports[`DependencyManager > Loading a Chain Map > should load an entire Chain Map from the Plugin Name Map 1`] = `
+[
   pluginDef {
-    "accessors": Object {},
+    "accessors": {},
     "enabled": false,
-    "host": PluginHost {
-      "getOption": [MockFunction],
-      "setOption": [MockFunction],
+    "host": Host {
+      "relay": Relay {},
     },
-    "manifest": Object {
-      "accessors": Object {
+    "manifest": {
+      "accessors": {
         "plug2": "plugin2-behaviour",
       },
-      "behaviours": Array [
+      "behaviours": [
         "plugin1-behaviour",
         "common1",
         "Plugin1",
@@ -297,14 +365,13 @@ Array [
     "status": 0,
   },
   pluginDef {
-    "accessors": Object {},
+    "accessors": {},
     "enabled": false,
-    "host": PluginHost {
-      "getOption": [MockFunction],
-      "setOption": [MockFunction],
+    "host": Host {
+      "relay": Relay {},
     },
-    "manifest": Object {
-      "behaviours": Array [
+    "manifest": {
+      "behaviours": [
         "plugin2-behaviour",
         "common1",
         "Plugin2",
@@ -317,18 +384,17 @@ Array [
     "status": 0,
   },
   pluginDef {
-    "accessors": Object {},
+    "accessors": {},
     "enabled": false,
-    "host": PluginHost {
-      "getOption": [MockFunction],
-      "setOption": [MockFunction],
+    "host": Host {
+      "relay": Relay {},
     },
-    "manifest": Object {
-      "accessors": Object {
+    "manifest": {
+      "accessors": {
         "plug1": "Plugin1-v0.0.1",
         "plug4": "plugin4-behaviour",
       },
-      "behaviours": Array [
+      "behaviours": [
         "plugin3-behaviour",
         "Plugin3",
       ],
@@ -340,17 +406,16 @@ Array [
     "status": 0,
   },
   pluginDef {
-    "accessors": Object {},
+    "accessors": {},
     "enabled": false,
-    "host": PluginHost {
-      "getOption": [MockFunction],
-      "setOption": [MockFunction],
+    "host": Host {
+      "relay": Relay {},
     },
-    "manifest": Object {
-      "accessors": Object {
+    "manifest": {
+      "accessors": {
         "plug2": "Plugin2-v0.0.1",
       },
-      "behaviours": Array [
+      "behaviours": [
         "plugin4-behaviour",
         "Plugin4",
       ],
@@ -364,14 +429,14 @@ Array [
 ]
 `;
 
-exports[`Dependencymanager Loading a Chain Map should load an entire Chain Map from the Plugin Name Map 2`] = `
-Object {
-  "Plugin1-v0.0.1": Object {
-    "manifest": Object {
-      "accessors": Object {
+exports[`DependencyManager > Loading a Chain Map > should load an entire Chain Map from the Plugin Name Map 2`] = `
+{
+  "Plugin1-v0.0.1": {
+    "manifest": {
+      "accessors": {
         "plug2": "plugin2-behaviour",
       },
-      "behaviours": Array [
+      "behaviours": [
         "plugin1-behaviour",
         "common1",
         "Plugin1",
@@ -383,9 +448,9 @@ Object {
     },
     "pluginDefinition": [Function],
   },
-  "Plugin2-v0.0.1": Object {
-    "manifest": Object {
-      "behaviours": Array [
+  "Plugin2-v0.0.1": {
+    "manifest": {
+      "behaviours": [
         "plugin2-behaviour",
         "common1",
         "Plugin2",
@@ -397,13 +462,13 @@ Object {
     },
     "pluginDefinition": [Function],
   },
-  "Plugin3-v0.0.1": Object {
-    "manifest": Object {
-      "accessors": Object {
+  "Plugin3-v0.0.1": {
+    "manifest": {
+      "accessors": {
         "plug1": "Plugin1-v0.0.1",
         "plug4": "plugin4-behaviour",
       },
-      "behaviours": Array [
+      "behaviours": [
         "plugin3-behaviour",
         "Plugin3",
       ],
@@ -414,12 +479,12 @@ Object {
     },
     "pluginDefinition": [Function],
   },
-  "Plugin4-v0.0.1": Object {
-    "manifest": Object {
-      "accessors": Object {
+  "Plugin4-v0.0.1": {
+    "manifest": {
+      "accessors": {
         "plug2": "Plugin2-v0.0.1",
       },
-      "behaviours": Array [
+      "behaviours": [
         "plugin4-behaviour",
         "Plugin4",
       ],
@@ -433,24 +498,23 @@ Object {
 }
 `;
 
-exports[`Dependencymanager Loading a Chain Map should properly identify individual failed plugins upon loading 1`] = `
-Object {
+exports[`DependencyManager > Loading a Chain Map > should properly identify individual failed plugins upon loading 1`] = `
+{
   "Plugin2-v0.0.1": [Error: [DependencyChainError] - Plugin2-v0.0.1 has failed an entire dependency chain],
 }
 `;
 
-exports[`Dependencymanager Utilities should build an Alias Map for Accessors 1`] = `
-Object {
-  "plug2": Array [
+exports[`DependencyManager > Utilities > should build an Alias Map for Accessors 1`] = `
+{
+  "plug2": [
     pluginDef {
-      "accessors": Object {},
+      "accessors": {},
       "enabled": false,
-      "host": PluginHost {
-        "getOption": [MockFunction],
-        "setOption": [MockFunction],
+      "host": Host {
+        "relay": Relay {},
       },
-      "manifest": Object {
-        "behaviours": Array [
+      "manifest": {
+        "behaviours": [
           "plugin2-behaviour",
           "common1",
           "Plugin2",
@@ -466,8 +530,8 @@ Object {
 }
 `;
 
-exports[`Dependencymanager Utilities should return a list of all Accessors within a group of Plugins 1`] = `
-Array [
+exports[`DependencyManager > Utilities > should return a list of all Accessors within a group of Plugins 1`] = `
+[
   "Plugin1-v0.0.1",
   "Plugin2-v0.0.1",
   "plugin2-behaviour",

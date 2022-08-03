@@ -1,14 +1,14 @@
 import _get from 'lodash.get';
 import _set from 'lodash.set';
-import PluginRelay from './Relay';
+import Relay from './Relay';
 
 const SETTINGS = {};
 
-export default class PluginHost {
-  relay: PluginRelay;
+export default class Host {
+  relay: Relay;
 
   constructor() {
-    this.relay = new PluginRelay();
+    this.relay = new Relay();
   }
 
   getOption(path: string) {

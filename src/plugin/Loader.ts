@@ -1,22 +1,14 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import * as util from 'util';
+import { readdir, readFile, stat } from 'node:fs/promises';
+import path from 'node:path';
 import Logger from '../core/Logger.js';
-import PluginBase, { type PluginManifest } from './Base';
+import Base, { type Manifest } from './Base';
 import DependencyManager, { type PluginLoadMap } from './DependencyManager';
-import PluginHost from './Host';
-import LoaderHelper from './LoaderHelper';
+import Host from './Host';
+import LoaderHelper from './LoaderHelper.js';
 
 const MODULE_NAME: string = path.basename(__filename, path.extname(__filename));
 const log = Logger.extend(MODULE_NAME);
 const PACKAGE_IDENTIFIER = /.*package.json$/;
-
-//@ts-ignore https://github.com/DefinitelyTyped/DefinitelyTyped/issues/20497
-const ReadDir: (path: string, options?: any) => Promise<Array<string>> = util.promisify(fs.readdir);
-//@ts-ignore https://github.com/DefinitelyTyped/DefinitelyTyped/issues/20497
-const ReadFile: (path: string, options?: any) => Promise<string> = util.promisify(fs.readFile);
-//@ts-ignore https://github.com/DefinitelyTyped/DefinitelyTyped/issues/20497
-const FileStat: (path: string, options?: any) => Promise<fs.Stats> = util.promisify(fs.stat);
 
 //TODO: Consider generating a hashmap of known plugins
 // First load will enable, and generate
@@ -28,14 +20,14 @@ export interface IInitOptions {
 }
 
 export interface ILoaderMeta {
-  manifest: PluginManifest;
-  pluginDefinition: typeof PluginBase;
+  manifest: Manifest;
+  pluginDefinition: typeof Base;
 }
 
-export default class PluginLoader {
+export default class Loader {
   static MANIFEST_KEY: string = 'MANIFEST';
 
-  pluginHost?: PluginHost;
+  pluginHost?: Host;
   depMgr?: DependencyManager;
 
   constructor(public options: IInitOptions) {
@@ -47,7 +39,7 @@ export default class PluginLoader {
 
     _DEBUG('Scanning for Plugin Packages...');
 
-    this.pluginHost = new PluginHost();
+    this.pluginHost = new Host();
     this.depMgr = new DependencyManager(this.pluginHost);
 
     this.setOptions();
@@ -55,14 +47,17 @@ export default class PluginLoader {
     const pluginManifests = await this.scanForPlugins(this.options.pluginPaths);
 
     // Attempt to load the Plugin from the filesystem
-    const loaderInfos = pluginManifests.reduce((classes: Array<ILoaderMeta>, manifest) => {
-      classes.push({
-        manifest,
-        pluginDefinition: require(manifest.pluginPath).default
-      });
+    const loaderInfos: ILoaderMeta[] = [];
 
-      return classes;
-    }, []);
+    for (let idx = 0; idx < pluginManifests.length; idx++) {
+      let manifest = pluginManifests[idx];
+      let pluginDefinition = await import(manifest.pluginPath);
+
+      loaderInfos.push({
+        manifest,
+        pluginDefinition
+      } as ILoaderMeta);
+    }
 
     return this.depMgr.loadPluginDefinitions(loaderInfos);
   }
@@ -71,8 +66,8 @@ export default class PluginLoader {
     // To be set by concrete class
   }
 
-  async scanForPlugins(topLevelPaths: Array<string>): Promise<Array<PluginManifest>> {
-    let foundManifests: Array<PluginManifest> = [];
+  async scanForPlugins(topLevelPaths: Array<string>): Promise<Array<Manifest>> {
+    let foundManifests: Array<Manifest> = [];
 
     const _DEBUG = log.extend('scanForPlugins');
 
@@ -80,7 +75,7 @@ export default class PluginLoader {
 
     try {
       for (let path of topLevelPaths) {
-        const detPlugs: Array<PluginManifest> = await this.detectPluginPackages(path);
+        const detPlugs: Array<Manifest> = await this.detectPluginPackages(path);
         foundManifests = foundManifests.concat(detPlugs);
       }
     } catch (err) {
@@ -93,16 +88,16 @@ export default class PluginLoader {
     return foundManifests;
   }
 
-  async detectPluginPackages(scanDir: string): Promise<Array<PluginManifest>> {
+  async detectPluginPackages(scanDir: string): Promise<Array<Manifest>> {
     const _DEBUG = log.extend('detectPluginPackages');
 
     _DEBUG(`Scanning folder for Plugin Entries: ${scanDir}`);
 
-    const potentialPluginDirs = await ReadDir(scanDir);
-    const foundPlugins: Array<PluginManifest> = [];
+    const potentialPluginDirs = await readdir(scanDir);
+    const foundPlugins: Array<Manifest> = [];
 
     for (let pluginDir of potentialPluginDirs) {
-      const isDir = (await FileStat(path.join(scanDir, pluginDir))).isDirectory();
+      const isDir = (await stat(path.join(scanDir, pluginDir))).isDirectory();
 
       if (!isDir) {
         continue;
@@ -118,9 +113,10 @@ export default class PluginLoader {
     return foundPlugins;
   }
 
-  async findPluginManifest(pluginDir: string): Promise<PluginManifest | undefined> {
+  async findPluginManifest(pluginDir: string): Promise<Manifest | undefined> {
     const _DEBUG = log.extend('findPluginEntrypoint');
-    const pluginDirContents = await ReadDir(pluginDir);
+
+    const pluginDirContents = await readdir(pluginDir);
 
     // Find the package file by the identifier
     let packagePath = pluginDirContents.find(fileName => PACKAGE_IDENTIFIER.test(fileName));
@@ -130,9 +126,9 @@ export default class PluginLoader {
 
     packagePath = path.join(pluginDir, packagePath);
 
-    const rawFile = await ReadFile(packagePath, 'utf8');
+    const rawFile = await readFile(packagePath, 'utf8');
     const packageObj = JSON.parse(rawFile);
-    const manifest = packageObj[PluginLoader.MANIFEST_KEY];
+    const manifest = packageObj[Loader.MANIFEST_KEY];
 
     if (!manifest) {
       return;

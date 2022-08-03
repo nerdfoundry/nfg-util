@@ -1,0 +1,70 @@
+// Vitest Snapshot v1
+
+exports[`PluginLoader > Plugin Scanning > should find all Plugins in a Scan Directory 1`] = `
+[
+  {
+    "accessors": {
+      "plug2": "plugin2-behaviour",
+    },
+    "behaviours": [
+      "plugin1-behaviour",
+      "common1",
+    ],
+    "name": "Plugin1",
+    "pluginPath": "fakePlugin",
+    "type": "SERVICE",
+    "version": "0.0.1",
+  },
+  {
+    "accessors": {
+      "plug2": "plugin2-behaviour",
+    },
+    "behaviours": [
+      "plugin1-behaviour",
+      "common1",
+    ],
+    "name": "Plugin1",
+    "pluginPath": "fakePlugin",
+    "type": "SERVICE",
+    "version": "0.0.1",
+  },
+]
+`;
+
+exports[`PluginLoader > Plugin Scanning > should find all Plugins in all Scan Directories 1`] = `
+[
+  {
+    "accessors": {
+      "plug2": "plugin2-behaviour",
+    },
+    "behaviours": [
+      "plugin1-behaviour",
+      "common1",
+    ],
+    "name": "Plugin1",
+    "pluginPath": "fakePlugin",
+    "type": "SERVICE",
+    "version": "0.0.1",
+  },
+]
+`;
+
+exports[`PluginLoader > Plugin Scanning > should return properly found Plugins in a Directory 1`] = `
+{
+  "name": "FakePlugin",
+  "pluginPath": "tsPluginDir",
+  "type": "SERVICE",
+  "version": "1.0.0",
+}
+`;
+
+exports[`PluginLoader > Plugin Scanning > should return properly found Plugins in a Directory 2`] = `
+{
+  "name": "FakePlugin",
+  "pluginPath": "jsPluginDir",
+  "type": "SERVICE",
+  "version": "1.0.0",
+}
+`;
+
+exports[`PluginLoader > Plugin Scanning > should skip non-directories in a Scan Directory 1`] = `[]`;

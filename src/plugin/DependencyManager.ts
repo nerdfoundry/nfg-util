@@ -1,9 +1,9 @@
-import { EventEmitter } from 'events';
 import uniq from 'lodash.uniq';
-import * as path from 'path';
+import { EventEmitter } from 'node:events';
+import path from 'node:path';
 import Logger from '../core/Logger';
-import PluginBase, { type AccessorAliasMap, type PluginManifest } from './Base';
-import PluginHost from './Host';
+import Base, { type AccessorAliasMap, type Manifest } from './Base';
+import Host from './Host';
 import { type ILoaderMeta } from './Loader';
 
 const MODULE_NAME: string = path.basename(__filename, path.extname(__filename));
@@ -13,7 +13,7 @@ export type PluginNameMap = Record<string, ILoaderMeta>;
 
 export type BehaviourNameMap = Record<string, Array<ILoaderMeta>>;
 
-export type PluginLoadMap = Record<string, Promise<PluginBase>>;
+export type PluginLoadMap = Record<string, Promise<Base>>;
 
 export type PluginFailMap = Record<string, DependencyChainError>;
 
@@ -40,11 +40,11 @@ export default class DependencyManager extends EventEmitter {
   loadMap: PluginLoadMap = {};
   pluginNameMap: PluginNameMap = {};
 
-  static getFullyQualifiedName(resource: ILoaderMeta | PluginBase) {
+  static getFullyQualifiedName(resource: ILoaderMeta | Base) {
     return `${resource.manifest.name}-v${resource.manifest.version}`;
   }
 
-  constructor(public pluginHost: PluginHost) {
+  constructor(public pluginHost: Host) {
     super();
 
     let loaded = 0;
@@ -54,7 +54,7 @@ export default class DependencyManager extends EventEmitter {
       log(`Detected ${total} plugins`);
     });
 
-    this.on('loaded', (pluginInstance: PluginBase) => {
+    this.on('loaded', (pluginInstance: Base) => {
       loaded++;
       log(`(${loaded}/${total}) - Loaded: ${pluginInstance.manifest.name}`);
     });
@@ -63,7 +63,7 @@ export default class DependencyManager extends EventEmitter {
   /**
    * Load Plugin Definitions into the Dependency tree for auto-injection
    */
-  async loadPluginDefinitions(loaderInfos: Array<ILoaderMeta>) {
+  async loadPluginDefinitions(loaderInfos: Array<ILoaderMeta>): Promise<PluginLoadMap> {
     const pluginNameMap = this.buildPluginNameMap(loaderInfos);
     // Assume Plugin Names as Accessor Names for newly loaded Plugins
     const pluginNames = Object.keys(pluginNameMap);
@@ -124,7 +124,7 @@ export default class DependencyManager extends EventEmitter {
     let retMap: BehaviourNameMap = {};
 
     return pluginLoaderMetas.reduce<BehaviourNameMap>((map, pluginClass: ILoaderMeta) => {
-      const { behaviours } = pluginClass.manifest as PluginManifest;
+      const { behaviours } = pluginClass.manifest as Manifest;
       const name = DependencyManager.getFullyQualifiedName(pluginClass);
       if (behaviours) {
         behaviours.forEach(behaviour => {
@@ -219,7 +219,7 @@ export default class DependencyManager extends EventEmitter {
     return chainMap;
   }
 
-  async loadChainMap(pluginNames: Array<string>): Promise<Array<PluginBase>> {
+  async loadChainMap(pluginNames: Array<string>): Promise<Array<Base>> {
     const pluginLoads = pluginNames.map(async pluginName => {
       // Already loaded, let's shortcut
       if (this.loadMap.hasOwnProperty(pluginName)) {
@@ -258,7 +258,7 @@ export default class DependencyManager extends EventEmitter {
     return map;
   }
 
-  async loadPluginInstance(pluginName: string): Promise<PluginBase> {
+  async loadPluginInstance(pluginName: string): Promise<Base> {
     try {
       const loaderMeta = this.pluginNameMap[pluginName];
       const accessorAliasMap = loaderMeta.manifest.accessors
@@ -267,7 +267,7 @@ export default class DependencyManager extends EventEmitter {
 
       // Previously loaded Plugins re-use instances for subsequent requests
       // Not loaded, so we instantiate and load!
-      const pluginInstance: PluginBase = new (loaderMeta.pluginDefinition as any)({
+      const pluginInstance: Base = new (loaderMeta.pluginDefinition as any)({
         host: this.pluginHost,
         manifest: loaderMeta.manifest,
         accessors: accessorAliasMap
@@ -277,7 +277,6 @@ export default class DependencyManager extends EventEmitter {
         .then(() => pluginInstance.enable())
         .then(() => pluginInstance.start())
         .then(() => this.emit('loaded', pluginInstance))
-        .then(() => console.log('loaded', pluginInstance))
         .then(() => pluginInstance);
 
       return promiseChain;
@@ -293,7 +292,7 @@ export default class DependencyManager extends EventEmitter {
   }
 
   //TODO Finish unloading of plugins thoroughly
-  async unloadPluginInstance(pluginName: string): Promise<PluginBase> {
+  async unloadPluginInstance(pluginName: string): Promise<Base> {
     try {
       const pluginInstance = await this.loadMap[pluginName];
 

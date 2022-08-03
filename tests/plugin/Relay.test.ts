@@ -1,14 +1,8 @@
-// tslint:disable-next-line
-// @ts-ignore
 import { BrowserWindow, ipcMain, ipcRenderer } from 'electron';
-import Relay from './Relay';
+import type { SpyInstance } from 'vitest';
+import Relay from '../../src/plugin/Relay.js';
 
-jest.mock('electron', () => ({
-  BrowserWindow: jest.fn(),
-  default: jest.fn(),
-  ipcMain: jest.fn(),
-  ipcRenderer: jest.fn()
-}));
+vi.mock('electron');
 
 describe('Plugin Relay', () => {
   let relay: Relay;
@@ -18,11 +12,12 @@ describe('Plugin Relay', () => {
     relay = new Relay();
     browserWindowInstance = new BrowserWindow();
 
-    jest.spyOn(BrowserWindow, 'getAllWindows').mockReturnValue([browserWindowInstance]);
+    vi.spyOn(BrowserWindow, 'getAllWindows').mockReturnValue([browserWindowInstance]);
   });
 
-  it('should detect if this is the main process or renderer', () => {
-    const spy = jest.spyOn(process, 'type', 'get');
+  it.todo('should detect if this is the main process or renderer', () => {
+    // FIXME: Needs to be injected into Relay (which will be further abstracted later)
+    const spy = vi.spyOn(process, 'type', 'get');
 
     spy.mockReturnValueOnce('renderer').mockReturnValueOnce('browser');
 
@@ -31,11 +26,11 @@ describe('Plugin Relay', () => {
   });
 
   describe('Eventing Methods', () => {
-    let spyIsMain: jest.SpyInstance<boolean, []>;
+    let spyIsMain: SpyInstance<[], boolean>;
 
     describe('Main Process', () => {
       beforeEach(() => {
-        spyIsMain = jest.spyOn(relay, 'isMain', 'get');
+        spyIsMain = vi.spyOn(relay, 'isMain', 'get');
         spyIsMain.mockReturnValue(true);
       });
 
@@ -71,7 +66,7 @@ describe('Plugin Relay', () => {
 
     describe('Renderer Process', () => {
       beforeEach(() => {
-        spyIsMain = jest.spyOn(relay, 'isMain', 'get');
+        spyIsMain = vi.spyOn(relay, 'isMain', 'get');
         spyIsMain.mockReturnValue(false);
       });
 
@@ -100,7 +95,7 @@ describe('Plugin Relay', () => {
 
     describe('On/Once Delegates', () => {
       beforeEach(() => {
-        jest.spyOn(relay, 'listen').mockImplementation(jest.fn());
+        vi.spyOn(relay, 'listen').mockImplementation(() => {});
       });
 
       it('on delegates to "listen"', () => {

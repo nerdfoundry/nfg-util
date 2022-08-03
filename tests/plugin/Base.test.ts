@@ -1,19 +1,19 @@
-import PluginBase, { PluginStatus, PluginType, type PluginManifest } from './Base';
-import PluginHost from './Host';
+import Base, { PluginStatus, PluginType, type Manifest } from '../../src/plugin/Base';
+import Host from '../../src/plugin/Host';
 
-jest.mock('./Host', () =>
-  jest.fn(() => ({
-    getOption: jest.fn(),
-    setOption: jest.fn()
+vi.mock('../../src/plugin/Host', () => ({
+  default: vi.fn(() => ({
+    getOption: vi.fn(),
+    setOption: vi.fn()
   }))
-);
+}));
 
 describe('Plugin Base', () => {
-  let base: PluginBase;
-  let host: PluginHost;
+  let base: Base;
+  let host: Host;
 
   beforeEach(() => {
-    const manifest: PluginManifest = {
+    const manifest: Manifest = {
       behaviours: [],
       name: 'fakePlugin',
       type: PluginType.SERVICE,
@@ -21,8 +21,8 @@ describe('Plugin Base', () => {
       version: '1.0.0'
     };
 
-    host = new PluginHost();
-    base = new PluginBase({
+    host = new Host();
+    base = new Base({
       host,
       manifest,
       accessors: {}
@@ -77,8 +77,8 @@ describe('Plugin Base', () => {
   });
 
   it('should restart', async () => {
-    jest.spyOn(base, 'stop').mockReturnValue(Promise.resolve(false));
-    jest.spyOn(base, 'start').mockReturnValue(Promise.resolve(true));
+    vi.spyOn(base, 'stop').mockReturnValue(Promise.resolve(false));
+    vi.spyOn(base, 'start').mockReturnValue(Promise.resolve(true));
 
     await expect(base.restart()).resolves.toBeTruthy();
   });

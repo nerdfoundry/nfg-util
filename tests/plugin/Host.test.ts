@@ -1,17 +1,17 @@
 import _get from 'lodash.get';
 import _set from 'lodash.set';
-import PluginHost from './Host';
+import Host from '../../src/plugin/Host.js';
 
-jest.mock('lodash.set', () => jest.fn());
-jest.mock('lodash.get', () => jest.fn());
+vi.mock('lodash.set', vi.fn().mockReturnValue({ default: vi.fn() }));
+vi.mock('lodash.get', vi.fn().mockReturnValue({ default: vi.fn() }));
 
-jest.mock('./Relay');
+vi.mock('./Relay');
 
 describe('Plugin Host', () => {
-  let host: PluginHost;
+  let host: Host;
 
   beforeEach(() => {
-    host = new PluginHost();
+    host = new Host();
   });
 
   it('should set an option', () => {
