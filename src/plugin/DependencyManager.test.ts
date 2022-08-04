@@ -1,13 +1,12 @@
-import Logger from '../core/Logger.js';
 import Base from './Base.js';
 import DependencyManager, {
   DependencyChainError,
-  type BehaviourNameMap,
-  type PluginNameMap
+  type BehaviourToMetasMap,
+  type FqnMetaMap
 } from './DependencyManager.js';
 import Host from './Host.js';
 import { PluginType, type Manifest } from './index.js';
-import type { ILoaderMeta } from './Loader.js';
+import type { LoaderMeta } from './Loader.js';
 
 vi.useFakeTimers({ shouldAdvanceTime: true });
 vi.spyOn(global, 'setTimeout');
@@ -27,32 +26,27 @@ describe('DependencyManager', () => {
     manifest5: Manifest,
     manifest6: Manifest,
     manifest7: Manifest;
-  let loaderMeta1: ILoaderMeta,
-    loaderMeta2: ILoaderMeta,
-    loaderMeta3: ILoaderMeta,
-    loaderMeta4: ILoaderMeta,
-    loaderMeta5: ILoaderMeta,
-    loaderMeta6: ILoaderMeta,
-    loaderMeta7: ILoaderMeta;
-  let pluginNameMap: PluginNameMap;
-  let behaviourNameMap: BehaviourNameMap;
-  let pluginNames: Array<string>;
-  let metaList: Array<ILoaderMeta>;
+  let loaderMeta1: LoaderMeta,
+    loaderMeta2: LoaderMeta,
+    loaderMeta3: LoaderMeta,
+    loaderMeta4: LoaderMeta,
+    loaderMeta5: LoaderMeta,
+    loaderMeta6: LoaderMeta,
+    loaderMeta7: LoaderMeta;
+  let pluginNameMap: FqnMetaMap;
+  let behaviourNameMap: BehaviourToMetasMap;
+  let pluginNames: string[];
+  let metaList: LoaderMeta[];
 
   function resetHostMock() {
     // Cleans up host mock junk from snapshot
-    (host.getOption as any).mockRestore();
-    (host.setOption as any).mockRestore();
-    // Cleans up host mock junk from snapshot
-    (host.getOption as any).mockRestore();
-    (host.setOption as any).mockRestore();
+    vi.mocked(host.getOption).mockReset();
+    vi.mocked(host.setOption).mockReset();
   }
 
   beforeEach(() => {
     // Hide logging errors via DEBUG
     vi.spyOn(console, 'log').mockImplementation(() => {});
-
-    (Logger as any).wtf = true;
 
     host = new Host();
     mgr = new DependencyManager(host);
@@ -180,7 +174,7 @@ describe('DependencyManager', () => {
     pluginNames = Object.keys(pluginNameMap);
     metaList = [loaderMeta1, loaderMeta2, loaderMeta3, loaderMeta4];
 
-    metaList.concat([loaderMeta5, loaderMeta6, loaderMeta7]).forEach((loaderMeta: ILoaderMeta) => {
+    metaList.concat([loaderMeta5, loaderMeta6, loaderMeta7]).forEach((loaderMeta: LoaderMeta) => {
       const pluginName = loaderMeta.manifest.name;
       loaderMeta.pluginDefinition.prototype.manifest = loaderMeta.manifest;
       loaderMeta.pluginDefinition.prototype.enable = vi
@@ -194,33 +188,34 @@ describe('DependencyManager', () => {
         .mockReturnValue(Promise.resolve(`pluginStopped: ${pluginName}`));
     });
 
-    loaderMeta2.pluginDefinition.prototype.start = vi
-      .fn()
-      .mockReturnValue(
-        new Promise(r => setTimeout(() => r(`pluginStarted [delayed]: ${loaderMeta2.manifest.name}`), 2000))
-      );
+    loaderMeta2.pluginDefinition.prototype.start = vi.fn().mockReturnValue(
+      // Wowsa, 10s startup!?
+      new Promise(r => setTimeout(() => r(`pluginStarted [delayed]: ${loaderMeta2.manifest.name}`), 10000))
+    );
 
-    mgr.behaviourNameMap = behaviourNameMap;
-    mgr.pluginNameMap = pluginNameMap;
+    mgr.behaviourToMetasMap = behaviourNameMap;
+    mgr.fqnMetaMap = pluginNameMap;
   });
 
   describe('Utilities', () => {
     it('should return a list of all Accessors within a group of Plugins', () => {
-      expect(mgr.getAccessorNamesForPlugins(metaList)).toMatchSnapshot();
+      expect(mgr.getAccessorNamesForMetas(metaList)).toMatchSnapshot();
     });
 
     it('should build an Alias Map for Accessors', async () => {
-      mgr.loadMap = {
-        [DependencyManager.getFullyQualifiedName(loaderMeta2)]: Promise.resolve(
-          new loaderMeta2.pluginDefinition({
-            host,
-            manifest: manifest2,
-            accessors: {}
-          })
-        )
+      mgr.fqnInstanceMap = {
+        [DependencyManager.getFullyQualifiedName(loaderMeta2)]: new loaderMeta2.pluginDefinition({
+          host,
+          manifest: manifest2,
+          accessors: {}
+        })
       };
 
-      const aliases = await mgr.mapAccessorAliases(manifest1.accessors!);
+      const aliases = [
+        await mgr.mapAccessorAliasesToInstances(manifest1.accessors!),
+        await mgr.mapAccessorAliasesToInstances(manifest3.accessors!),
+        await mgr.mapAccessorAliasesToInstances(manifest4.accessors!)
+      ];
 
       resetHostMock();
 
@@ -228,70 +223,70 @@ describe('DependencyManager', () => {
     });
 
     it('should normalize an Accessor to all satisfying Plugin Names', () => {
-      expect(mgr.accessorNameToPluginNames(DependencyManager.getFullyQualifiedName(loaderMeta1))).toMatchObject([
+      expect(mgr.getFqnsForAccessorName(DependencyManager.getFullyQualifiedName(loaderMeta1))).toMatchObject([
         'Plugin1-v0.0.1'
       ]);
-      expect(mgr.accessorNameToPluginNames(DependencyManager.getFullyQualifiedName(loaderMeta2))).toMatchObject([
+      expect(mgr.getFqnsForAccessorName(DependencyManager.getFullyQualifiedName(loaderMeta2))).toMatchObject([
         'Plugin2-v0.0.1'
       ]);
-      expect(mgr.accessorNameToPluginNames('plugin2-behaviour')).toMatchObject(['Plugin2-v0.0.1']);
-      expect(mgr.accessorNameToPluginNames('common1')).toMatchObject(['Plugin1-v0.0.1', 'Plugin2-v0.0.1']);
+      expect(mgr.getFqnsForAccessorName('plugin2-behaviour')).toMatchObject(['Plugin2-v0.0.1']);
+      expect(mgr.getFqnsForAccessorName('common1')).toMatchObject(['Plugin1-v0.0.1', 'Plugin2-v0.0.1']);
     });
   });
 
   describe('Build Plugin Name Map', () => {
     it('should error when a duplicate name of a plugin is found', () => {
-      expect(() => mgr.buildPluginNameMap([loaderMeta1, loaderMeta1])).toThrow('DuplicateName');
+      expect(() => mgr.hydrateFqnToMetaMap([loaderMeta1, loaderMeta1])).toThrow('DuplicateName');
     });
 
     it('should return a named mapping of all Plugins', () => {
-      expect(mgr.buildPluginNameMap(metaList)).toMatchSnapshot();
+      expect(mgr.hydrateFqnToMetaMap(metaList)).toMatchSnapshot();
     });
 
     it('should return a named mapping of Plugin Behaviours', () => {
-      expect(mgr.buildBehaviourNameMap(metaList)).toMatchSnapshot();
+      expect(mgr.hydrateBehaviourToMetaMap(metaList)).toMatchSnapshot();
     });
   });
 
   describe('Build Accessor Chain Map', () => {
     it('should not allow self references', () => {
-      expect(() => mgr.buildAccessorChainMap(['plugin7-behaviour'])).toThrow('SelfReference');
+      expect(() => mgr.hydrateAccessorToFqnChainMap(['plugin7-behaviour'])).toThrow('SelfReference');
     });
 
     it('should not allow cyclical dependencies', () => {
       const name5 = DependencyManager.getFullyQualifiedName(loaderMeta5);
       const name6 = DependencyManager.getFullyQualifiedName(loaderMeta6);
 
-      const behaviourNameMap: BehaviourNameMap = {
+      const behaviourNameMap: BehaviourToMetasMap = {
         [name5]: [loaderMeta5],
         [name6]: [loaderMeta6]
       };
 
-      mgr.behaviourNameMap = behaviourNameMap;
+      mgr.behaviourToMetasMap = behaviourNameMap;
 
-      expect(() => mgr.buildAccessorChainMap([name5, name6])).toThrow('Cyclical');
+      expect(() => mgr.hydrateAccessorToFqnChainMap([name5, name6])).toThrow('Cyclical');
     });
 
     it('should fail when attempting to load missing Plugins', () => {
-      expect(() => mgr.buildAccessorChainMap(['UnknownPlugin'])).toThrow('PluginMissing');
+      expect(() => mgr.hydrateAccessorToFqnChainMap(['UnknownPlugin'])).toThrow('PluginMissing');
     });
 
     it('should fail when attempting to load missing Dependencies', () => {
-      delete mgr.behaviourNameMap['Plugin7-v0.0.1'];
-      expect(() => mgr.buildAccessorChainMap(['plugin7-behaviour'])).toThrow('DependencyMissing');
+      delete mgr.behaviourToMetasMap['Plugin7-v0.0.1'];
+      expect(() => mgr.hydrateAccessorToFqnChainMap(['plugin7-behaviour'])).toThrow('DependencyMissing');
     });
 
     it('should build a proper Plugin Dependency tree from Plugin Names', () => {
-      expect(mgr.buildAccessorChainMap(pluginNames)).toMatchSnapshot();
+      expect(mgr.hydrateAccessorToFqnChainMap(pluginNames)).toMatchSnapshot();
     });
   });
 
   describe('Loading a Chain Map', () => {
     it('should load an entire Chain Map from the Plugin Name Map', async () => {
-      const loadMap: Record<string, ILoaderMeta> = {};
-      vi.spyOn(mgr, 'loadPluginInstance').mockImplementation(async pluginName => {
+      const loadMap: Record<string, LoaderMeta> = {};
+      vi.spyOn(mgr, 'pluginFactory').mockImplementation(async pluginName => {
         if (!loadMap[pluginName]) {
-          loadMap[pluginName] = await pluginNameMap[pluginName];
+          loadMap[pluginName] = pluginNameMap[pluginName];
         }
 
         const retInst = new loadMap[pluginName].pluginDefinition({
@@ -309,11 +304,11 @@ describe('DependencyManager', () => {
         Plugin4: ['Plugin2']
       };
 
-      mgr.chainMap = chainMap;
+      mgr.accessorToFqnChainMap = chainMap;
 
       const loadChain = await mgr.loadChainMap(pluginNames);
 
-      expect(mgr.loadPluginInstance).toHaveBeenCalledTimes(4);
+      expect(mgr.pluginFactory).toHaveBeenCalledTimes(4);
 
       resetHostMock();
 
@@ -324,7 +319,7 @@ describe('DependencyManager', () => {
     it('should properly identify individual failed plugins upon loading', () => {
       const failMap: Record<string, DependencyChainError> = {};
 
-      vi.spyOn(mgr, 'loadPluginInstance').mockImplementation(pluginName => {
+      vi.spyOn(mgr, 'pluginFactory').mockImplementation(pluginName => {
         const newError = new DependencyChainError(pluginName, new Error('Test Error'));
         failMap[pluginName] = newError;
         throw newError;
@@ -341,19 +336,19 @@ describe('DependencyManager', () => {
         [name4]: [name2]
       };
 
-      mgr.chainMap = chainMap;
+      mgr.accessorToFqnChainMap = chainMap;
 
       return mgr.loadChainMap(pluginNames).catch(err => {
-        expect(mgr.loadMap).toMatchObject({});
+        expect(mgr.fqnInstanceMap).toMatchObject({});
         expect(failMap).toMatchSnapshot(); //normally would be mgr.loadMap, but we're mocking impl
-        expect(mgr.loadPluginInstance).toHaveBeenCalledTimes(1);
+        expect(mgr.pluginFactory).toHaveBeenCalledTimes(1);
       });
     });
   });
 
   describe('Loading Plugin Instances', () => {
     it('should load a Plugin Instance', async () => {
-      vi.spyOn(mgr, 'mapAccessorAliases').mockImplementation(async () => {
+      vi.spyOn(mgr, 'mapAccessorAliasesToInstances').mockImplementation(async () => {
         return {
           plug2: [
             new loaderMeta2.pluginDefinition({
@@ -365,8 +360,8 @@ describe('DependencyManager', () => {
         };
       });
 
-      expect(mgr.loadPluginInstance('Plugin1-v0.0.1')).resolves.toMatchSnapshot();
-      expect(mgr.loadPluginInstance('Plugin2-v0.0.1')).resolves.toMatchSnapshot();
+      expect(mgr.pluginFactory('Plugin1-v0.0.1')).resolves.toMatchSnapshot();
+      expect(mgr.pluginFactory('Plugin2-v0.0.1')).resolves.toMatchSnapshot();
     });
 
     it('should throw an Error when a Plugin load fails to initialize', async () => {
@@ -377,14 +372,14 @@ describe('DependencyManager', () => {
         })
       };
 
-      const pluginNameMap: PluginNameMap = {
+      const pluginNameMap: FqnMetaMap = {
         FakePlugin: loaderMeta
       };
 
-      mgr.pluginNameMap = pluginNameMap;
+      mgr.fqnMetaMap = pluginNameMap;
 
       try {
-        await mgr.loadPluginInstance('FakePlugin');
+        await mgr.pluginFactory('FakePlugin');
       } catch (err) {
         const errCasted = err as DependencyChainError;
 
@@ -399,34 +394,35 @@ describe('DependencyManager', () => {
 
   describe('Loading Plugin Definitions', () => {
     it('should load the entire Plugin Dependency tree into a single Promise result', async () => {
-      const loadMap = mgr.loadPluginDefinitions([loaderMeta2, loaderMeta1]);
+      vi.runAllTimers();
 
-      await vi.advanceTimersByTime(2000);
+      const loadMap = await mgr.loadPluginDefinitions([loaderMeta2, loaderMeta1]);
 
       resetHostMock();
 
       expect(setTimeout).toHaveBeenCalledTimes(1);
-      await expect(loadMap).resolves.toMatchSnapshot();
+
+      expect(loadMap).toMatchSnapshot();
     });
 
     it('should not allow known plugins to be re-loaded', async () => {
       const name1 = DependencyManager.getFullyQualifiedName(loaderMeta1);
 
-      mgr.loadMap = {
-        [name1]: Promise.resolve(
-          new loaderMeta3.pluginDefinition({
-            host,
-            manifest: manifest3,
-            accessors: {}
-          })
-        )
+      mgr.fqnInstanceMap = {
+        [name1]: new loaderMeta3.pluginDefinition({
+          host,
+          manifest: manifest3,
+          accessors: {}
+        })
       };
 
       await mgr.loadPluginDefinitions([loaderMeta1]);
 
-      expect(mgr.loadMap).toMatchSnapshot();
-      expect(mgr.failMap).toMatchSnapshot();
-      expect(mgr.failMap[name1].origError.toString()).toMatch('Already Loaded');
+      resetHostMock();
+
+      expect(mgr.fqnInstanceMap).toMatchSnapshot();
+      expect(mgr.fqnFailMap).toMatchSnapshot();
+      expect(mgr.fqnFailMap[name1].origError.toString()).toMatch('Already Loaded');
     });
   });
 
@@ -440,13 +436,13 @@ describe('DependencyManager', () => {
 
       plug1Inst.manifest = loaderMeta1.manifest;
 
-      mgr.loadMap = {
-        Plugin1: Promise.resolve(plug1Inst)
+      mgr.fqnInstanceMap = {
+        Plugin1: plug1Inst
       };
 
       await mgr.unloadPluginInstance(loaderMeta1.manifest.name);
 
-      expect(mgr.loadMap).not.toHaveProperty('Plugin1');
+      expect(mgr.fqnInstanceMap).not.toHaveProperty('Plugin1');
     });
 
     it('should catch errors while stopping a Plugin', async () => {

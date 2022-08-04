@@ -1,30 +1,29 @@
-import uniq from 'lodash.uniq';
 import { EventEmitter } from 'node:events';
 import path from 'node:path';
 import Logger from '../core/Logger.js';
-import Base, { type AccessorAliasMap, type Manifest } from './Base.js';
+import Base, { type AccessorAliasInstanceMap } from './Base.js';
 import Host from './Host.js';
-import { type ILoaderMeta } from './Loader.js';
+import { type LoaderMeta } from './Loader.js';
 
 const MODULE_NAME: string = path.basename(__filename, path.extname(__filename));
 const log = Logger.extend(MODULE_NAME);
 
-export type PluginNameMap = Record<string, ILoaderMeta>;
+export type FqnMetaMap = Record<string, LoaderMeta>;
 
-export type BehaviourNameMap = Record<string, Array<ILoaderMeta>>;
+export type BehaviourToMetasMap = Record<string, LoaderMeta[]>;
 
-export type PluginLoadMap = Record<string, Promise<Base>>;
+export type FqnInstanceMap = Record<string, Base>;
 
-export type PluginFailMap = Record<string, DependencyChainError>;
+export type FqnFailMap = Record<string, DependencyChainError>;
 
-export type PluginChainMap = Record<string, Array<string>>;
+export type AccessorToFqnChainMap = Record<string, string[]>;
 
 export class DependencyChainError extends Error {
   origError: Error;
-  chainMap: Array<string> = [];
+  chainMap: string[] = [];
 
   constructor(pluginName: string, origError: Error) {
-    super(`[DependencyChainError] - ${pluginName} has failed an entire dependency chain`);
+    super(`[DependencyChainError] - ${pluginName} has failed an entire dependency chain - ${origError.message}`);
 
     this.origError = origError;
     this.chainMap.push(pluginName);
@@ -34,22 +33,23 @@ export class DependencyChainError extends Error {
 }
 
 export default class DependencyManager extends EventEmitter {
-  behaviourNameMap: BehaviourNameMap = {};
-  chainMap: PluginChainMap = {};
-  failMap: PluginFailMap = {};
-  loadMap: PluginLoadMap = {};
-  pluginNameMap: PluginNameMap = {};
+  behaviourToMetasMap: BehaviourToMetasMap = {};
+  accessorToFqnChainMap: AccessorToFqnChainMap = {};
+  fqnFailMap: FqnFailMap = {};
+  fqnInstanceMap: FqnInstanceMap = {};
+  fqnMetaMap: FqnMetaMap = {};
 
-  static getFullyQualifiedName(resource: ILoaderMeta | Base) {
+  static getFullyQualifiedName(resource: LoaderMeta | Base) {
     return `${resource.manifest.name}-v${resource.manifest.version}`;
   }
 
   constructor(public pluginHost: Host) {
     super();
 
-    let loaded = 0;
-    let total = 0;
-    this.on('detected', (names: Array<string>) => {
+    let loaded = 0,
+      total = 0;
+
+    this.on('detected', (names: string[]) => {
       total = names.length;
       log(`Detected ${total} plugins`);
     });
@@ -63,230 +63,229 @@ export default class DependencyManager extends EventEmitter {
   /**
    * Load Plugin Definitions into the Dependency tree for auto-injection
    */
-  async loadPluginDefinitions(loaderInfos: Array<ILoaderMeta>): Promise<PluginLoadMap> {
-    const pluginNameMap = this.buildPluginNameMap(loaderInfos);
-    // Assume Plugin Names as Accessor Names for newly loaded Plugins
-    const pluginNames = Object.keys(pluginNameMap);
+  async loadPluginDefinitions(loaderMetas: LoaderMeta[]): Promise<FqnInstanceMap> {
+    this.hydrateFqnToMetaMap(loaderMetas);
+    this.hydrateBehaviourToMetaMap(loaderMetas);
 
-    this.emit('detected', pluginNames);
+    const unloadedFqns = Object.keys(this.fqnMetaMap);
 
-    // Plugin names already loaded result in an error
-    for (let name of pluginNames.concat()) {
-      if (this.loadMap.hasOwnProperty(name)) {
-        // Remove from known Plugin names and new name map to avoid further processing
-        pluginNames.splice(pluginNames.indexOf(name), 1);
-        delete pluginNameMap[name];
-        this.failMap[name] = new DependencyChainError(name, new Error('Already Loaded'));
-      } else {
-        this.pluginNameMap[name] = pluginNameMap[name];
-      }
-    }
+    this.emit('detected', unloadedFqns);
 
-    // Blind overwrite of previously named mappings with new mapping.
-    // This should normally only be due to newly loaded Plugins adding their behaviour to a previous list.
-    const behaviourNameMap = this.buildBehaviourNameMap(loaderInfos);
-    const behaviourNames = Object.keys(behaviourNameMap);
-    behaviourNames.forEach(name => (this.behaviourNameMap[name] = behaviourNameMap[name]));
+    this.hydrateAccessorToFqnChainMap(unloadedFqns);
 
-    const chainMap = this.buildAccessorChainMap(pluginNames);
-    const chainNames = Object.keys(chainMap);
-    chainNames.forEach(name => (this.chainMap[name] = chainMap[name]));
-
-    await this.loadChainMap(pluginNames);
-
-    return this.loadMap;
+    return this.loadChainMap(unloadedFqns);
   }
 
-  buildPluginNameMap(loaderMetas: Array<ILoaderMeta>): PluginNameMap {
-    const hasDupe: Array<string> = [];
+  hydrateFqnToMetaMap(loaderMetas: LoaderMeta[]): FqnMetaMap {
+    const hasDupe: string[] = [];
 
-    const pluginMap = loaderMetas.reduce<PluginNameMap>((map, loaderMeta: ILoaderMeta) => {
+    loaderMetas.forEach(loaderMeta => {
       const name = DependencyManager.getFullyQualifiedName(loaderMeta);
-      // Semaphore, must be handled outside of reduction or causes an uncaught exception
-      if (map[name]) {
-        hasDupe.push(name);
-      } else {
-        map[name] = loaderMeta;
-      }
 
-      return map;
-    }, {});
+      // Duplicates attempting to load
+      if (this.fqnMetaMap[name]) {
+        hasDupe.push(name);
+      } else if (this.fqnInstanceMap[name]) {
+        // Plugin by name has already *been* loaded
+        this.fqnFailMap[name] = new DependencyChainError(name, new Error('Already Loaded'));
+      } else {
+        // New plugin, let's accept it!
+        this.fqnMetaMap[name] = loaderMeta;
+      }
+    });
 
     //@ts-ignore:next-line
     if (0 < hasDupe.length) {
+      //FIXME: Turn into typed error!
       throw new Error(`${MODULE_NAME} - [DuplicateName] Duplicate Plugins detected: ${hasDupe.join(', ')}`);
     }
 
-    return pluginMap;
+    return this.fqnMetaMap;
   }
 
-  buildBehaviourNameMap(pluginLoaderMetas: Array<ILoaderMeta>): BehaviourNameMap {
-    let retMap: BehaviourNameMap = {};
+  hydrateBehaviourToMetaMap(loaderMetas: LoaderMeta[]): BehaviourToMetasMap {
+    loaderMetas.forEach(loaderMeta => {
+      const name = DependencyManager.getFullyQualifiedName(loaderMeta);
+      const { behaviours } = loaderMeta.manifest;
 
-    return pluginLoaderMetas.reduce<BehaviourNameMap>((map, pluginClass: ILoaderMeta) => {
-      const { behaviours } = pluginClass.manifest as Manifest;
-      const name = DependencyManager.getFullyQualifiedName(pluginClass);
-      if (behaviours) {
+      // Ensure the FQN is also listed as a Behaviour
+      if (behaviours?.concat(name)) {
         behaviours.forEach(behaviour => {
-          map[behaviour] = map[behaviour] || [];
-          (map[behaviour] as Array<Object>).push(pluginClass);
+          this.behaviourToMetasMap[behaviour] = this.behaviourToMetasMap[behaviour] || [];
+          this.behaviourToMetasMap[behaviour].push(loaderMeta);
         });
       }
-      // Ensure the Plugin name listed as a Behaviour
-      map[name] = map[name] || [];
-      (map[name] as Array<Object>).push(pluginClass);
-      return map;
-    }, retMap);
+    });
+
+    return this.behaviourToMetasMap;
   }
 
-  getAccessorNamesForPlugins(accessorGroup: Array<ILoaderMeta>): Array<string> {
-    const names = accessorGroup.reduce((names: Array<string>, accessorPlugin) => {
+  /**
+   * Retrieves unique FQNs for an AccessorName
+   */
+  getFqnsForAccessorName(accessorName: string): string[] {
+    // FIXME: Do we need to check here?
+    // We're already checking in hydrateAccessorToFqnMap. Is this useful outside of this class?
+    // if (!this.behaviourToMetaMap[accessorName]) {
+    //   throw new Error(`${MODULE_NAME} - [DependencyMissing] Missing Dependency for Accessor: ${accessorName}`);
+    // }
+
+    // Assumes Behaviors are Hydrated!
+    return this.behaviourToMetasMap[accessorName].map(DependencyManager.getFullyQualifiedName).sort();
+  }
+
+  /**
+   * Iterates over LoaderMetas and builds unique array of AccessorNames
+   */
+  getAccessorNamesForMetas(loaderMetas: LoaderMeta[]): string[] {
+    const names = loaderMetas.reduce((names: Set<string>, accessorPlugin) => {
       if (accessorPlugin.manifest.accessors) {
-        const subAccessorNames = Object.values(accessorPlugin.manifest.accessors);
-        names = subAccessorNames.concat(names);
+        Object.values(accessorPlugin.manifest.accessors).forEach(behaviorName => names.add(behaviorName));
       }
 
       return names;
-    }, []);
+    }, new Set<string>());
 
-    return uniq(names).sort();
+    return [...names].sort();
   }
 
-  accessorNameToPluginNames(accessorName: string): Array<string> {
-    if (!this.behaviourNameMap[accessorName]) {
-      throw new Error(`${MODULE_NAME} - [DependencyMissing] Missing Dependency for Accessor: ${accessorName}`);
-    }
-
-    return uniq(
-      this.behaviourNameMap[accessorName].map(loaderMeta => DependencyManager.getFullyQualifiedName(loaderMeta))
-    ).sort();
-  }
-
-  buildAccessorChainMap(
-    accessorNames: Array<string>,
-    chainMap: PluginChainMap = {},
-    pluginChain: Array<string> = []
-  ): PluginChainMap {
+  /**
+   * Breadth First Search, Post-Order to determine resolved
+   * order of dependencies for a grouping of Accessor Names
+   */
+  hydrateAccessorToFqnChainMap(accessorNames: string[], currChain: string[] = []): AccessorToFqnChainMap {
     for (let accessorName of accessorNames) {
       // Skip if this has been processed before
-      if (chainMap[accessorName]) {
+      if (this.accessorToFqnChainMap[accessorName]) {
         continue;
       }
 
-      // Look up accessor for all Plugins that satisfy it
-      const behaviourGroup = this.behaviourNameMap[accessorName];
+      // Look up Accessor for all Plugins that satisfy it
+      const metasForAccessorName = this.behaviourToMetasMap[accessorName];
+
       // Break immediately if Accessor/Plugin is missing
-      if (!behaviourGroup || 0 == behaviourGroup.length) {
-        throw new Error(`${MODULE_NAME} - [PluginMissing] No reference found for Accessor: ${accessorName}`);
+      if (0 == metasForAccessorName?.length) {
+        //FIXME: Type this error!
+        //FIXME: Chain error??? When/where do we need those even??
+        throw new Error(`${MODULE_NAME} - [PluginMissing] No Plugin Manifests provide for Accessor: ${accessorName}`);
       }
 
       // Get all Plugin Names of the iterated Accessor
-      const accessorPluginNames = new Set(this.accessorNameToPluginNames(accessorName));
+      const fqnsForAccessorName = this.getFqnsForAccessorName(accessorName);
       // Get all dependency Accessor Names of the Plugins in the behaviourGroup
-      const dependencyAccessorNames = this.getAccessorNamesForPlugins(behaviourGroup);
+      const dependencyAccessorNames = this.getAccessorNamesForMetas(metasForAccessorName);
+
       // Convert all Accessor Names into their associative Plugin Names
-      const dependencyPluginNames = dependencyAccessorNames
-        ? dependencyAccessorNames.reduce<Array<string>>(
-            (plugins: Array<string>, name: string) => plugins.concat(this.accessorNameToPluginNames(name)),
-            []
-          )
-        : [];
-      // Break if self referenced
-      const pluginsSelfRef = dependencyPluginNames.filter(pluginName => accessorPluginNames.has(pluginName));
-      if (0 !== pluginsSelfRef.length) {
-        throw new Error(`${MODULE_NAME} - [SelfReference] Invalid Self Reference: ${[...pluginsSelfRef].join(', ')}`);
+      let dependencyFQNs: string[] = [];
+
+      // "Unzip" all FQNs across the dependencies' AccessorNames
+      if (dependencyAccessorNames) {
+        dependencyAccessorNames.forEach(
+          accessorName => (dependencyFQNs = dependencyFQNs.concat(this.getFqnsForAccessorName(accessorName)))
+        );
       }
 
-      // Break if cyclic reference
-      const pluginsCyclical = dependencyPluginNames.filter(pluginName => pluginChain.includes(pluginName));
+      // Break if cyclic reference (aka, this chain tried loading this dependency before)
+      const pluginsCyclical = dependencyFQNs.filter(pluginName => currChain.includes(pluginName));
       if (0 !== pluginsCyclical.length) {
-        throw new Error(`${MODULE_NAME} - [Cyclical] Dependency Detected: ${pluginChain.join(' -> ')}`);
+        throw new Error(`${MODULE_NAME} - [Cyclical] Dependency Detected: ${currChain.join(' -> ')}`);
       }
 
-      // Sub-Accessors exist, so we need to recursively build their chain maps
-      if (0 !== dependencyPluginNames.length) {
+      // Sub-Accessors may exist, so we need to recursively build their chain maps
+      if (0 !== dependencyFQNs.length) {
         // If existing, update the known Accessors for the chosen
         //  `associatedAccessorName` to be loaded after the newly found ones
-        chainMap[accessorName] = uniq(dependencyPluginNames);
+        this.accessorToFqnChainMap[accessorName] = dependencyFQNs;
 
         // Recursively detect depencency tree
-        //   - Make sure we know about ourselves in the Plugin chain, but don't update the
-        //     original for subsequent sibling iterations!
-        this.buildAccessorChainMap(dependencyPluginNames, chainMap, pluginChain.concat(accessorName));
+        //   - Make sure we know about ourselves in the Plugin Chain, but don't update the
+        //     original for subsequent sibling iterations (creates duplicates)!
+        this.hydrateAccessorToFqnChainMap(dependencyAccessorNames, currChain.concat(accessorName));
       }
     }
 
-    return chainMap;
+    return this.accessorToFqnChainMap;
   }
 
-  async loadChainMap(pluginNames: Array<string>): Promise<Array<Base>> {
-    const pluginLoads = pluginNames.map(async pluginName => {
-      // Already loaded, let's shortcut
-      if (this.loadMap.hasOwnProperty(pluginName)) {
-        return this.loadMap[pluginName];
+  /**
+   * Breadth First Search, Post-Order to Instantiate Plugin Instances
+   */
+  async loadChainMap(pluginNames: string[]): Promise<FqnInstanceMap> {
+    for (let pluginName of pluginNames) {
+      // Already loading/loaded, skip
+      if (this.fqnInstanceMap[pluginName]) {
+        continue;
       }
 
-      let loadChain: any = Promise.resolve();
-
-      const pluginChainList = this.chainMap[pluginName];
+      const pluginChainList = this.accessorToFqnChainMap[pluginName];
 
       // If we have a dependency Plugin Chain, recursively process it...
       if (pluginChainList) {
-        loadChain = loadChain.then(() => this.loadChainMap(pluginChainList));
+        await this.loadChainMap(pluginChainList);
       }
 
-      loadChain = loadChain.then(() => this.loadPluginInstance(pluginName));
-
-      this.loadMap[pluginName] = loadChain;
-
-      return loadChain;
-    });
-
-    return await Promise.all(pluginLoads);
-  }
-
-  async mapAccessorAliases(accessorAliasDefinitions: { [accessorName: string]: string }): Promise<AccessorAliasMap> {
-    const aliasNames = Object.keys(accessorAliasDefinitions);
-    const map: AccessorAliasMap = {};
-
-    for (let alias of aliasNames) {
-      const pluginNames: Array<string> = this.accessorNameToPluginNames(accessorAliasDefinitions[alias]);
-
-      map[alias] = await Promise.all(pluginNames.map(pluginName => this.loadMap[pluginName]));
+      this.fqnInstanceMap[pluginName] = await this.pluginFactory(pluginName);
     }
 
-    return map;
+    return this.fqnInstanceMap;
   }
 
-  async loadPluginInstance(pluginName: string): Promise<Base> {
+  async mapAccessorAliasesToInstances(accessorAliasDefinitions: {
+    [accessorName: string]: string;
+  }): Promise<AccessorAliasInstanceMap> {
+    //FIXME: Missing plugins in the loadMap should probably fail catastrophically!
+
+    const aliasNames = Object.keys(accessorAliasDefinitions);
+
+    return aliasNames.reduce<AccessorAliasInstanceMap>((map, alias) => {
+      const pluginNames = this.getFqnsForAccessorName(accessorAliasDefinitions[alias]);
+
+      pluginNames.forEach(pluginName => {
+        if (this.fqnInstanceMap[pluginName]) {
+          map[alias] = map[alias] || [];
+          map[alias].push(this.fqnInstanceMap[pluginName]);
+        } else {
+          //FIXME: Could this even happen? The idea is that a plugin has an accessor
+          // for a plugin that hasn't be considered for load
+          const newError = new DependencyChainError(pluginName, new Error(`No Plugins loaded for Accessor: ${alias}!`));
+          this.fqnFailMap[pluginName] = newError;
+          throw newError;
+        }
+      });
+
+      return map;
+    }, {});
+  }
+
+  async pluginFactory(pluginName: string): Promise<Base> {
     try {
-      const loaderMeta = this.pluginNameMap[pluginName];
+      const loaderMeta = this.fqnMetaMap[pluginName];
       const accessorAliasMap = loaderMeta.manifest.accessors
-        ? await this.mapAccessorAliases(loaderMeta.manifest.accessors)
+        ? await this.mapAccessorAliasesToInstances(loaderMeta.manifest.accessors)
         : null;
 
-      // Previously loaded Plugins re-use instances for subsequent requests
-      // Not loaded, so we instantiate and load!
+      // Create the instance!
       const pluginInstance: Base = new (loaderMeta.pluginDefinition as any)({
         host: this.pluginHost,
         manifest: loaderMeta.manifest,
         accessors: accessorAliasMap
       });
 
-      const promiseChain = Promise.resolve()
-        .then(() => pluginInstance.enable())
-        .then(() => pluginInstance.start())
-        .then(() => this.emit('loaded', pluginInstance))
-        .then(() => pluginInstance);
+      // FIXME: Might need to check if user disabled,
+      // or if errored before maybe don't reload
+      await pluginInstance.enable();
+      await pluginInstance.start();
 
-      return promiseChain;
+      this.emit('loaded', pluginInstance);
+
+      return pluginInstance;
     } catch (err) {
       const errCasted = err as Error;
 
       log('Error enabling/starting Plugin...', errCasted);
 
       const newError = new DependencyChainError(pluginName, errCasted);
-      this.failMap[pluginName] = newError;
+      this.fqnFailMap[pluginName] = newError;
       throw newError;
     }
   }
@@ -294,15 +293,15 @@ export default class DependencyManager extends EventEmitter {
   //TODO Finish unloading of plugins thoroughly
   async unloadPluginInstance(pluginName: string): Promise<Base> {
     try {
-      const pluginInstance = await this.loadMap[pluginName];
+      const pluginInstance = this.fqnInstanceMap[pluginName];
 
       await pluginInstance.stop();
 
       // const accessorNames = this.getAccessorNamesForPlugins([pluginInstance]);
 
-      delete this.loadMap[pluginName];
-      delete this.pluginNameMap[pluginName];
-      // accessorNames.forEach(n => this.behaviourNameMap[n].splice(this.behaviourNameMap[n].indexOf(n), 1));
+      delete this.fqnInstanceMap[pluginName];
+      delete this.fqnMetaMap[pluginName];
+      // accessorNames.forEach(n => this.behaviourToMetaMap[n].splice(this.behaviourToMetaMap[n].indexOf(n), 1));
 
       return pluginInstance;
     } catch (err) {

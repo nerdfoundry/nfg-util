@@ -3,4 +3,8 @@ const MockInstance = {
   setOption: vi.fn()
 };
 
-export default vi.fn(() => MockInstance);
+const Mocker = function () {
+  return MockInstance;
+};
+
+export default Mocker;

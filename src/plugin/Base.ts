@@ -1,4 +1,4 @@
-import { NotEnabledError, AlreadyEnabledError } from './Error.js';
+import { AlreadyEnabledError, NotEnabledError } from './Error.js';
 import Host from './Host.js';
 
 export enum PluginType {
@@ -20,7 +20,7 @@ type AccessorAlias = string;
 export interface Manifest {
   // Accessor Manifest Config
   accessors?: Record<AccessorAlias, Behavior>;
-  behaviours?: Array<Behavior>;
+  behaviours?: Behavior[];
   pluginPath: string;
   name: string;
   type: PluginType;
@@ -28,19 +28,19 @@ export interface Manifest {
   // views?: object; //TODO: Type this out with sub-views
 }
 
-export type AccessorAliasMap = Record<AccessorAlias, Array<Base>>;
+export type AccessorAliasInstanceMap = Record<AccessorAlias, Base[]>;
 
 export interface IPluginOptions {
   host: Host;
   manifest: Manifest;
   // Resolved Accessors, from DepMgr
-  accessors: AccessorAliasMap;
+  accessors?: AccessorAliasInstanceMap;
 }
 
 export default class Base {
   static ROOT_KEY: string = 'Plugins';
 
-  accessors: AccessorAliasMap;
+  accessors: AccessorAliasInstanceMap;
   host: Host;
   manifest: Manifest;
   enabled: boolean = false;
