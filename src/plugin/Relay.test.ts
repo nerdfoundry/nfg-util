@@ -1,6 +1,6 @@
 import { BrowserWindow, ipcMain, ipcRenderer } from 'electron';
 import type { SpyInstance } from 'vitest';
-import Relay from '../../src/plugin/Relay.js';
+import Relay from './Relay.js';
 
 vi.mock('electron');
 

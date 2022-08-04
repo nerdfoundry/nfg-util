@@ -1,5 +1,5 @@
-import { AlreadyEnabledError, NotEnabledError } from './Error';
-import Host from './Host';
+import { NotEnabledError, AlreadyEnabledError } from './Error.js';
+import Host from './Host.js';
 
 export enum PluginType {
   SERVICE = 'SERVICE',

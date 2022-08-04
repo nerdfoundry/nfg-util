@@ -1,10 +1,10 @@
 import uniq from 'lodash.uniq';
 import { EventEmitter } from 'node:events';
 import path from 'node:path';
-import Logger from '../core/Logger';
-import Base, { type AccessorAliasMap, type Manifest } from './Base';
-import Host from './Host';
-import { type ILoaderMeta } from './Loader';
+import Logger from '../core/Logger.js';
+import Base, { type AccessorAliasMap, type Manifest } from './Base.js';
+import Host from './Host.js';
+import { type ILoaderMeta } from './Loader.js';
 
 const MODULE_NAME: string = path.basename(__filename, path.extname(__filename));
 const log = Logger.extend(MODULE_NAME);

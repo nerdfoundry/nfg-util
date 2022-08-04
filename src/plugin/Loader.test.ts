@@ -1,9 +1,9 @@
 import * as fs from 'node:fs/promises';
-import { PluginType, type Manifest } from '../../src/index.js';
-import DependencyManager from '../../src/plugin/DependencyManager.js';
-import Host from '../../src/plugin/Host.js';
-import Loader from '../../src/plugin/Loader.js';
-import LoaderHelper from '../../src/plugin/LoaderHelper.js';
+import DependencyManager from './DependencyManager.js';
+import Host from './Host.js';
+import { PluginType, type Manifest } from './index.js';
+import Loader from './Loader.js';
+import LoaderHelper from './LoaderHelper.js';
 
 vi.mock('node:fs/promises', () => {
   const MockInstance = {
@@ -15,9 +15,9 @@ vi.mock('node:fs/promises', () => {
   return MockInstance;
 });
 
-vi.mock('../../src/core/Logger');
+vi.mock('../core/Logger.js');
 
-vi.mock('../../src/plugin/Host.js', () => {
+vi.mock('./Host.js', () => {
   const MockInstance = {
     setOption: vi.fn()
   };
@@ -27,7 +27,7 @@ vi.mock('../../src/plugin/Host.js', () => {
   };
 });
 
-vi.mock('../../src/plugin/DependencyManager.js', () => {
+vi.mock('./DependencyManager.js', () => {
   const MockInstance = {
     loadPluginDefinitions: vi.fn(() => Promise.resolve('depManagerLoaded'))
   };
@@ -37,7 +37,7 @@ vi.mock('../../src/plugin/DependencyManager.js', () => {
   };
 });
 
-vi.mock('../../src/plugin/LoaderHelper.js', () => ({
+vi.mock('./LoaderHelper.js', () => ({
   default: {
     resolve: vi.fn(),
     cache: {}

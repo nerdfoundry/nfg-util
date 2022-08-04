@@ -1,6 +1,6 @@
 import _get from 'lodash.get';
 import _set from 'lodash.set';
-import Relay from './Relay';
+import Relay from './Relay.js';
 
 const SETTINGS = {};
 

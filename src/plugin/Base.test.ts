@@ -1,7 +1,7 @@
-import Base, { PluginStatus, PluginType, type Manifest } from '../../src/plugin/Base';
-import Host from '../../src/plugin/Host';
+import Base, { PluginStatus, PluginType, type Manifest } from './Base.js';
+import Host from './Host.js';
 
-vi.mock('../../src/plugin/Host', () => ({
+vi.mock('./Host', () => ({
   default: vi.fn(() => ({
     getOption: vi.fn(),
     setOption: vi.fn()

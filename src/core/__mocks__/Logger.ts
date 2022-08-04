@@ -7,9 +7,6 @@ const Mock: any = vi.fn();
 //   return extended;
 // };
 
-Mock.extend = vi.fn().mockReturnValue(Mock);
-
-console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! YO DAWG WE SET UP THE LOGGER');
-debugger;
+Mock.extend = vi.fn(() => Mock);
 
 export default Mock;

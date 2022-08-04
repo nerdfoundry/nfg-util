@@ -1,11 +1,11 @@
 import _get from 'lodash.get';
 import _set from 'lodash.set';
-import Host from '../../src/plugin/Host.js';
+import Host from './Host.js';
 
 vi.mock('lodash.set', vi.fn().mockReturnValue({ default: vi.fn() }));
 vi.mock('lodash.get', vi.fn().mockReturnValue({ default: vi.fn() }));
 
-vi.mock('./Relay');
+vi.mock('./Relay.js', vi.fn().mockReturnValue({ default: vi.fn() }));
 
 describe('Plugin Host', () => {
   let host: Host;

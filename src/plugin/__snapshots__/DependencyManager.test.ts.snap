@@ -256,8 +256,21 @@ exports[`DependencyManager > Loading Plugin Definitions > should load the entire
 pluginDef {
   "accessors": null,
   "enabled": false,
-  "host": Host {
-    "relay": Relay {},
+  "host": {
+    "getOption": [MockFunction spy] {
+      "calls": [
+        [
+          "Plugins.Plugin2.enabled",
+        ],
+      ],
+      "results": [
+        {
+          "type": "return",
+          "value": undefined,
+        },
+      ],
+    },
+    "setOption": [MockFunction spy],
   },
   "manifest": {
     "behaviours": [
@@ -281,8 +294,21 @@ pluginDef {
       pluginDef {
         "accessors": {},
         "enabled": false,
-        "host": Host {
-          "relay": Relay {},
+        "host": {
+          "getOption": [MockFunction spy] {
+            "calls": [
+              [
+                "Plugins.Plugin2.enabled",
+              ],
+            ],
+            "results": [
+              {
+                "type": "return",
+                "value": undefined,
+              },
+            ],
+          },
+          "setOption": [MockFunction spy],
         },
         "manifest": {
           "behaviours": [
@@ -300,8 +326,21 @@ pluginDef {
     ],
   },
   "enabled": false,
-  "host": Host {
-    "relay": Relay {},
+  "host": {
+    "getOption": [MockFunction spy] {
+      "calls": [
+        [
+          "Plugins.Plugin2.enabled",
+        ],
+      ],
+      "results": [
+        {
+          "type": "return",
+          "value": undefined,
+        },
+      ],
+    },
+    "setOption": [MockFunction spy],
   },
   "manifest": {
     "accessors": {
@@ -345,8 +384,9 @@ exports[`DependencyManager > Loading a Chain Map > should load an entire Chain M
   pluginDef {
     "accessors": {},
     "enabled": false,
-    "host": Host {
-      "relay": Relay {},
+    "host": {
+      "getOption": [MockFunction spy],
+      "setOption": [MockFunction spy],
     },
     "manifest": {
       "accessors": {
@@ -367,8 +407,9 @@ exports[`DependencyManager > Loading a Chain Map > should load an entire Chain M
   pluginDef {
     "accessors": {},
     "enabled": false,
-    "host": Host {
-      "relay": Relay {},
+    "host": {
+      "getOption": [MockFunction spy],
+      "setOption": [MockFunction spy],
     },
     "manifest": {
       "behaviours": [
@@ -386,8 +427,9 @@ exports[`DependencyManager > Loading a Chain Map > should load an entire Chain M
   pluginDef {
     "accessors": {},
     "enabled": false,
-    "host": Host {
-      "relay": Relay {},
+    "host": {
+      "getOption": [MockFunction spy],
+      "setOption": [MockFunction spy],
     },
     "manifest": {
       "accessors": {
@@ -408,8 +450,9 @@ exports[`DependencyManager > Loading a Chain Map > should load an entire Chain M
   pluginDef {
     "accessors": {},
     "enabled": false,
-    "host": Host {
-      "relay": Relay {},
+    "host": {
+      "getOption": [MockFunction spy],
+      "setOption": [MockFunction spy],
     },
     "manifest": {
       "accessors": {
@@ -510,8 +553,9 @@ exports[`DependencyManager > Utilities > should build an Alias Map for Accessors
     pluginDef {
       "accessors": {},
       "enabled": false,
-      "host": Host {
-        "relay": Relay {},
+      "host": {
+        "getOption": [MockFunction spy],
+        "setOption": [MockFunction spy],
       },
       "manifest": {
         "behaviours": [

@@ -4,7 +4,7 @@
     "files": true
   },
 
-  "include": ["src/**/*", "tests/**/*", "__mocks__"],
+  "include": ["src/**/*", "tests/**/*"],
   "exclude": ["node_modules", "dist"],
 
   "compilerOptions": {

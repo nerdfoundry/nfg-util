@@ -1,9 +1,9 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import Logger from '../core/Logger.js';
-import Base, { type Manifest } from './Base';
-import DependencyManager, { type PluginLoadMap } from './DependencyManager';
-import Host from './Host';
+import Base, { type Manifest } from './Base.js';
+import DependencyManager, { type PluginLoadMap } from './DependencyManager.js';
+import Host from './Host.js';
 import LoaderHelper from './LoaderHelper.js';
 
 const MODULE_NAME: string = path.basename(__filename, path.extname(__filename));

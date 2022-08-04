@@ -1,20 +1,20 @@
-import Logger from '../../src/core/Logger.js';
-import { PluginType, type Manifest } from '../../src/index.js';
-import Base from '../../src/plugin/Base.js';
+import Logger from '../core/Logger.js';
+import Base from './Base.js';
 import DependencyManager, {
   DependencyChainError,
   type BehaviourNameMap,
   type PluginNameMap
-} from '../../src/plugin/DependencyManager.js';
-import Host from '../../src/plugin/Host.js';
-import type { ILoaderMeta } from '../../src/plugin/Loader.js';
+} from './DependencyManager.js';
+import Host from './Host.js';
+import { PluginType, type Manifest } from './index.js';
+import type { ILoaderMeta } from './Loader.js';
 
 vi.useFakeTimers({ shouldAdvanceTime: true });
 vi.spyOn(global, 'setTimeout');
 
-vi.mock('../../src/core/Logger');
-vi.mock('../../src/plugin/Host.js');
-vi.mock('../../src/plugin/Relay');
+vi.mock('../core/Logger.js');
+vi.mock('./Host.js');
+vi.mock('./Relay.js');
 
 describe('DependencyManager', () => {
   let host: Host;
@@ -38,6 +38,15 @@ describe('DependencyManager', () => {
   let behaviourNameMap: BehaviourNameMap;
   let pluginNames: Array<string>;
   let metaList: Array<ILoaderMeta>;
+
+  function resetHostMock() {
+    // Cleans up host mock junk from snapshot
+    (host.getOption as any).mockRestore();
+    (host.setOption as any).mockRestore();
+    // Cleans up host mock junk from snapshot
+    (host.getOption as any).mockRestore();
+    (host.setOption as any).mockRestore();
+  }
 
   beforeEach(() => {
     // Hide logging errors via DEBUG
@@ -188,7 +197,7 @@ describe('DependencyManager', () => {
     loaderMeta2.pluginDefinition.prototype.start = vi
       .fn()
       .mockReturnValue(
-        new Promise(r => setTimeout(() => r(`pluginStarted [delayed]: ${loaderMeta2.manifest.name}`), 1000))
+        new Promise(r => setTimeout(() => r(`pluginStarted [delayed]: ${loaderMeta2.manifest.name}`), 2000))
       );
 
     mgr.behaviourNameMap = behaviourNameMap;
@@ -213,8 +222,7 @@ describe('DependencyManager', () => {
 
       const aliases = await mgr.mapAccessorAliases(manifest1.accessors!);
 
-      // (host.getOption as any).mockRestore();
-      // (host.setOption as any).mockRestore();
+      resetHostMock();
 
       await expect(aliases).toMatchSnapshot();
     });
@@ -307,8 +315,7 @@ describe('DependencyManager', () => {
 
       expect(mgr.loadPluginInstance).toHaveBeenCalledTimes(4);
 
-      // (host.getOption as any).mockRestore();
-      // (host.setOption as any).mockRestore();
+      resetHostMock();
 
       expect(loadChain).toMatchSnapshot();
       expect(loadMap).toMatchSnapshot(); //normally would be mgr.loadMap, but we're mocking impl
@@ -392,10 +399,14 @@ describe('DependencyManager', () => {
 
   describe('Loading Plugin Definitions', () => {
     it('should load the entire Plugin Dependency tree into a single Promise result', async () => {
-      const loadMap = await mgr.loadPluginDefinitions([loaderMeta2, loaderMeta1]);
+      const loadMap = mgr.loadPluginDefinitions([loaderMeta2, loaderMeta1]);
+
+      await vi.advanceTimersByTime(2000);
+
+      resetHostMock();
 
       expect(setTimeout).toHaveBeenCalledTimes(1);
-      expect(loadMap).toMatchSnapshot();
+      await expect(loadMap).resolves.toMatchSnapshot();
     });
 
     it('should not allow known plugins to be re-loaded', async () => {
