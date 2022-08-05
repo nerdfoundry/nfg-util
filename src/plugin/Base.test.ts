@@ -14,7 +14,7 @@ describe('Plugin Base', () => {
 
   beforeEach(() => {
     const manifest: Manifest = {
-      behaviours: [],
+      behaviors: [],
       name: 'fakePlugin',
       type: PluginType.SERVICE,
       pluginPath: '',
@@ -29,8 +29,8 @@ describe('Plugin Base', () => {
     });
   });
 
-  it('should assign the name as a Behaviour on initializing', () => {
-    expect(base.manifest.behaviours).toContain('fakePlugin');
+  it('should assign the name as a Behavior on initializing', () => {
+    expect(base.manifest.behaviors).toContain('fakePlugin');
   });
 
   it('should throw an Error when not enabled on start', async () => {
@@ -77,8 +77,8 @@ describe('Plugin Base', () => {
   });
 
   it('should restart', async () => {
-    vi.spyOn(base, 'stop').mockReturnValue(Promise.resolve(false));
-    vi.spyOn(base, 'start').mockReturnValue(Promise.resolve(true));
+    vi.spyOn(base, 'stop').mockReturnValue(Promise.resolve(base));
+    vi.spyOn(base, 'start').mockReturnValue(Promise.resolve(base));
 
     await expect(base.restart()).resolves.toBeTruthy();
   });

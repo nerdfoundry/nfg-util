@@ -20,7 +20,7 @@ type AccessorAlias = string;
 export interface Manifest {
   // Accessor Manifest Config
   accessors?: Record<AccessorAlias, Behavior>;
-  behaviours?: Behavior[];
+  behaviors?: Behavior[];
   pluginPath: string;
   name: string;
   type: PluginType;
@@ -28,7 +28,7 @@ export interface Manifest {
   // views?: object; //TODO: Type this out with sub-views
 }
 
-export type AccessorAliasInstanceMap = Record<AccessorAlias, Base[]>;
+export type AccessorAliasInstanceMap = Record<AccessorAlias, Set<Base>>;
 
 export interface IPluginOptions {
   host: Host;
@@ -38,26 +38,26 @@ export interface IPluginOptions {
 }
 
 export default class Base {
-  static ROOT_KEY: string = 'Plugins';
+  static ROOT_KEY = 'Plugins';
 
   accessors: AccessorAliasInstanceMap;
   host: Host;
   manifest: Manifest;
-  enabled: boolean = false;
+  enabled = false;
   status: PluginStatus = PluginStatus.STOPPED;
 
   constructor(options: IPluginOptions) {
-    this.accessors = options.accessors!;
+    this.accessors = options.accessors || {};
     this.host = options.host;
     this.manifest = Object.freeze(options.manifest);
     this.enabled = this.getSetting('enabled') || false;
 
-    if (this.manifest.behaviours && false === this.manifest.behaviours.includes(this.manifest.name)) {
-      this.manifest.behaviours.push(this.manifest.name);
+    if (this.manifest.behaviors && false === this.manifest.behaviors.includes(this.manifest.name)) {
+      this.manifest.behaviors.push(this.manifest.name);
     }
   }
 
-  async start(): Promise<any> {
+  async start(): Promise<this> {
     if (false === this.enabled) {
       this.status = PluginStatus.ERRORED;
       throw new NotEnabledError(this.manifest.name);
@@ -68,7 +68,7 @@ export default class Base {
     return Promise.resolve(this);
   }
 
-  async stop(): Promise<any> {
+  async stop(): Promise<this> {
     if (false === this.enabled) {
       this.status = PluginStatus.ERRORED;
       throw new NotEnabledError(this.manifest.name);
@@ -79,11 +79,11 @@ export default class Base {
     return Promise.resolve(this);
   }
 
-  async restart(): Promise<any> {
+  async restart(): Promise<this> {
     return this.stop().then(() => this.start());
   }
 
-  async enable(): Promise<any> {
+  async enable(): Promise<this> {
     if (true === this.enabled) {
       this.status = PluginStatus.ERRORED;
       throw new AlreadyEnabledError(this.manifest.name);
@@ -94,7 +94,7 @@ export default class Base {
     return Promise.resolve(this);
   }
 
-  async disable(): Promise<any> {
+  async disable(): Promise<this> {
     if (false === this.enabled) {
       this.status = PluginStatus.ERRORED;
       throw new NotEnabledError(this.manifest.name);
@@ -107,10 +107,15 @@ export default class Base {
     return Promise.resolve(this);
   }
 
-  getSetting(settingPath: string) {
-    return this.host.getOption(`${Base.ROOT_KEY}.${this.manifest.name}.${settingPath}`);
+  get _settingPath() {
+    return `${Base.ROOT_KEY}.${this.manifest.name}`;
   }
 
+  getSetting(settingPath: string) {
+    return this.host.getOption(`${this._settingPath}.${settingPath}`);
+  }
+
+  // eslint-disable-next-line
   setSetting(settingPath: string, val: any) {
     this.host.setOption(`${Base.ROOT_KEY}.${this.manifest.name}.${settingPath}`, val);
   }
