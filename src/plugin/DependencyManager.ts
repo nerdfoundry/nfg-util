@@ -9,14 +9,10 @@ const MODULE_NAME: string = path.basename(__filename, path.extname(__filename));
 const log = Logger.extend(MODULE_NAME);
 
 export type FqnMetaMap = Record<string, LoaderMeta>;
-
-export type BehaviourToMetasMap = Record<string, LoaderMeta[]>;
-
+export type BehaviorToMetasMap = Record<string, Set<LoaderMeta>>;
 export type FqnInstanceMap = Record<string, Base>;
-
-export type FqnFailMap = Record<string, DependencyChainError>;
-
-export type AccessorToFqnChainMap = Record<string, string[]>;
+export type FqnFailMap = Record<string, PluginLoadedError>;
+export type FqnToLoadChainMap = Record<string, Set<string>>;
 
 export class DependencyChainError extends Error {
   origError: Error;
@@ -32,9 +28,36 @@ export class DependencyChainError extends Error {
   }
 }
 
+export class PluginLoadedError extends Error {
+  constructor(fqn: string) {
+    super(
+      `[PluginLoaded] - This Plugin Name & Version are already Loaded. To load the Manifest being used now the previous Plugin must be Unloaded! Plugin FQN: ${fqn}`
+    );
+
+    Error.captureStackTrace(this, PluginLoadedError);
+  }
+}
+
+export class DependencyMissingError extends Error {
+  constructor(behaviorName: string) {
+    super(`[DependencyMissing] - Missing Dependency for Accessor: ${behaviorName}`);
+
+    Error.captureStackTrace(this, DependencyMissingError);
+  }
+}
+
+export class CyclicReferenceError extends Error {
+  constructor(chain: string[]) {
+    super(`CyclicReference] Dependency Chain has a Cyclic Reference Detected: ${chain.join(' -> ')}`);
+
+    Error.captureStackTrace(this, CyclicReferenceError);
+  }
+}
+
 export default class DependencyManager extends EventEmitter {
-  behaviourToMetasMap: BehaviourToMetasMap = {};
-  accessorToFqnChainMap: AccessorToFqnChainMap = {};
+  behaviorToMetasMap: BehaviorToMetasMap = {};
+  accessorToFqnChainMap: FqnToLoadChainMap = {};
+  // Review this... Does it make sense?? Needs a better chain history?
   fqnFailMap: FqnFailMap = {};
   fqnInstanceMap: FqnInstanceMap = {};
   fqnMetaMap: FqnMetaMap = {};
@@ -64,14 +87,17 @@ export default class DependencyManager extends EventEmitter {
    * Load Plugin Definitions into the Dependency tree for auto-injection
    */
   async loadPluginDefinitions(loaderMetas: LoaderMeta[]): Promise<FqnInstanceMap> {
+    // From the incoming LoaderMetas, map FQN -> LoaderMetas
     this.hydrateFqnToMetaMap(loaderMetas);
-    this.hydrateBehaviourToMetaMap(loaderMetas);
+    // From the incoming LoaderMetas, map Behaviors -> LoaderMetas
+    const unloadedFqnsMap = this.hydrateBehaviorToMetaMap(loaderMetas);
 
-    const unloadedFqns = Object.keys(this.fqnMetaMap);
+    const unloadedFqns = new Set(Object.keys(unloadedFqnsMap));
 
     this.emit('detected', unloadedFqns);
 
-    this.hydrateAccessorToFqnChainMap(unloadedFqns);
+    // Hydrate the Accessor to FQN ChainMap, aka, a dependency tree.
+    this.hydrateFqnToLoadChainMap(unloadedFqns);
 
     return this.loadChainMap(unloadedFqns);
   }
@@ -83,18 +109,17 @@ export default class DependencyManager extends EventEmitter {
       const name = DependencyManager.getFullyQualifiedName(loaderMeta);
 
       // Duplicates attempting to load
-      if (this.fqnMetaMap[name]) {
+      if (this.fqnInstanceMap[name]) {
+        // Plugin by FQN is instantiated already, it needs to be unloaded first
+        this.fqnFailMap[name] = new PluginLoadedError(name);
+      } else if (this.fqnMetaMap[name]) {
         hasDupe.push(name);
-      } else if (this.fqnInstanceMap[name]) {
-        // Plugin by name has already *been* loaded
-        this.fqnFailMap[name] = new DependencyChainError(name, new Error('Already Loaded'));
       } else {
         // New plugin, let's accept it!
         this.fqnMetaMap[name] = loaderMeta;
       }
     });
 
-    //@ts-ignore:next-line
     if (0 < hasDupe.length) {
       //FIXME: Turn into typed error!
       throw new Error(`${MODULE_NAME} - [DuplicateName] Duplicate Plugins detected: ${hasDupe.join(', ')}`);
@@ -103,115 +128,118 @@ export default class DependencyManager extends EventEmitter {
     return this.fqnMetaMap;
   }
 
-  hydrateBehaviourToMetaMap(loaderMetas: LoaderMeta[]): BehaviourToMetasMap {
-    loaderMetas.forEach(loaderMeta => {
-      const name = DependencyManager.getFullyQualifiedName(loaderMeta);
-      const { behaviours } = loaderMeta.manifest;
+  hydrateBehaviorToMetaMap(loaderMetas: LoaderMeta[]): BehaviorToMetasMap {
+    const newMappings: BehaviorToMetasMap = {};
 
-      // Ensure the FQN is also listed as a Behaviour
-      if (behaviours?.concat(name)) {
-        behaviours.forEach(behaviour => {
-          this.behaviourToMetasMap[behaviour] = this.behaviourToMetasMap[behaviour] || [];
-          this.behaviourToMetasMap[behaviour].push(loaderMeta);
+    loaderMetas.forEach(loaderMeta => {
+      const fqn = DependencyManager.getFullyQualifiedName(loaderMeta);
+      const { behaviors, version } = loaderMeta.manifest;
+
+      if (behaviors) {
+        behaviors.forEach(behavior => {
+          const behaviorVer = `${behavior}-v${version}`;
+          // Ensure both simple and versioned BehaviorNames are mapped
+          this.behaviorToMetasMap[behavior] = this.behaviorToMetasMap[behavior] || new Set();
+          this.behaviorToMetasMap[behaviorVer] = this.behaviorToMetasMap[behaviorVer] || new Set();
+
+          this.behaviorToMetasMap[behavior].add(loaderMeta);
+          this.behaviorToMetasMap[behaviorVer].add(loaderMeta);
         });
       }
+
+      // Ensure the FQN is also listed as a Behavior
+      this.behaviorToMetasMap[fqn] = this.behaviorToMetasMap[fqn] || new Set();
+      this.behaviorToMetasMap[fqn].add(loaderMeta);
+      newMappings[fqn] = this.behaviorToMetasMap[fqn];
     });
 
-    return this.behaviourToMetasMap;
+    return newMappings;
   }
 
   /**
-   * Retrieves unique FQNs for an AccessorName
+   * Retrieves unique FQNs for an BehaviorName
    */
-  getFqnsForAccessorName(accessorName: string): string[] {
-    // FIXME: Do we need to check here?
-    // We're already checking in hydrateAccessorToFqnMap. Is this useful outside of this class?
-    // if (!this.behaviourToMetaMap[accessorName]) {
-    //   throw new Error(`${MODULE_NAME} - [DependencyMissing] Missing Dependency for Accessor: ${accessorName}`);
-    // }
+  getFqnsForBehaviorName(behaviorName: string): Set<string> {
+    // BehaviorName was never loaded for some reason, maybe the user didn't add the plugin in the ecoystem?
+    if (!this.behaviorToMetasMap[behaviorName]) {
+      throw new DependencyMissingError(behaviorName);
+    }
 
-    // Assumes Behaviors are Hydrated!
-    return this.behaviourToMetasMap[accessorName].map(DependencyManager.getFullyQualifiedName).sort();
+    const names: Set<string> = new Set();
+
+    for (const loaderMeta of this.behaviorToMetasMap[behaviorName]) {
+      names.add(DependencyManager.getFullyQualifiedName(loaderMeta));
+    }
+
+    return names;
   }
 
   /**
    * Iterates over LoaderMetas and builds unique array of AccessorNames
    */
-  getAccessorNamesForMetas(loaderMetas: LoaderMeta[]): string[] {
-    const names = loaderMetas.reduce((names: Set<string>, accessorPlugin) => {
-      if (accessorPlugin.manifest.accessors) {
-        Object.values(accessorPlugin.manifest.accessors).forEach(behaviorName => names.add(behaviorName));
+  getAccessorNamesForMetas(loaderMetas: Set<LoaderMeta>): Set<string> {
+    return Array.from(loaderMetas).reduce<Set<string>>((names, { manifest }) => {
+      if (manifest.accessors) {
+        Object.values(manifest.accessors).forEach(behaviorName => names.add(behaviorName));
       }
 
       return names;
-    }, new Set<string>());
-
-    return [...names].sort();
+    }, new Set());
   }
 
   /**
-   * Breadth First Search, Post-Order to determine resolved
+   * Depth First Search, Post-Order to determine resolved
    * order of dependencies for a grouping of Accessor Names
    */
-  hydrateAccessorToFqnChainMap(accessorNames: string[], currChain: string[] = []): AccessorToFqnChainMap {
-    for (let accessorName of accessorNames) {
-      // Skip if this has been processed before
-      if (this.accessorToFqnChainMap[accessorName]) {
-        continue;
-      }
-
-      // Look up Accessor for all Plugins that satisfy it
-      const metasForAccessorName = this.behaviourToMetasMap[accessorName];
-
-      // Break immediately if Accessor/Plugin is missing
-      if (0 == metasForAccessorName?.length) {
-        //FIXME: Type this error!
-        //FIXME: Chain error??? When/where do we need those even??
-        throw new Error(`${MODULE_NAME} - [PluginMissing] No Plugin Manifests provide for Accessor: ${accessorName}`);
-      }
-
-      // Get all Plugin Names of the iterated Accessor
-      const fqnsForAccessorName = this.getFqnsForAccessorName(accessorName);
-      // Get all dependency Accessor Names of the Plugins in the behaviourGroup
-      const dependencyAccessorNames = this.getAccessorNamesForMetas(metasForAccessorName);
+  hydrateFqnToLoadChainMap(behaviorNames: Set<string>, currChain: string[] = []): FqnToLoadChainMap {
+    for (const currBehaviorName of behaviorNames) {
+      const isFQN = !!this.fqnMetaMap[currBehaviorName];
+      // Get all FQNs of the current BehaviorName to store
+      const behaviorFqns = this.getFqnsForBehaviorName(currBehaviorName);
+      // Get all LoaderMetas for the current BehaviorName
+      const metasForBehaviorName = this.behaviorToMetasMap[currBehaviorName];
+      // Get all dependencies' AccessorNames
+      const dependencyAccessorNames = this.getAccessorNamesForMetas(metasForBehaviorName);
 
       // Convert all Accessor Names into their associative Plugin Names
-      let dependencyFQNs: string[] = [];
-
+      const dependencyFQNs: Set<string> = new Set();
       // "Unzip" all FQNs across the dependencies' AccessorNames
-      if (dependencyAccessorNames) {
-        dependencyAccessorNames.forEach(
-          accessorName => (dependencyFQNs = dependencyFQNs.concat(this.getFqnsForAccessorName(accessorName)))
+      dependencyAccessorNames.forEach(accessorName =>
+        this.getFqnsForBehaviorName(accessorName).forEach(fqn => dependencyFQNs.add(fqn))
+      );
+
+      // The *actual* dependencies used depends on whether this BehaviorName is an FQN or not!
+      // Non-FQNs should resolve to actual FQNs, and FQNs should continue their dependency resolution
+      //  via AccessorNames.
+      const actualDeps = isFQN ? dependencyFQNs : behaviorFqns;
+
+      // Ensure we don't have a Cyclic Reference in our ChainMap
+      if (currChain.includes(currBehaviorName)) {
+        throw new CyclicReferenceError(currChain.concat(currBehaviorName));
+      }
+
+      // We have dependencies to load!
+      if (0 !== actualDeps.size) {
+        this.hydrateFqnToLoadChainMap(
+          actualDeps,
+          // Make sure we know about ourselves in the chain listing while we're curried
+          // into the recursive call, but we don't want to modify the current chain for
+          // siblings as they process (which would in turn guarantee false-positives)
+          currChain.concat(currBehaviorName)
         );
       }
 
-      // Break if cyclic reference (aka, this chain tried loading this dependency before)
-      const pluginsCyclical = dependencyFQNs.filter(pluginName => currChain.includes(pluginName));
-      if (0 !== pluginsCyclical.length) {
-        throw new Error(`${MODULE_NAME} - [Cyclical] Dependency Detected: ${currChain.join(' -> ')}`);
-      }
-
-      // Sub-Accessors may exist, so we need to recursively build their chain maps
-      if (0 !== dependencyFQNs.length) {
-        // If existing, update the known Accessors for the chosen
-        //  `associatedAccessorName` to be loaded after the newly found ones
-        this.accessorToFqnChainMap[accessorName] = dependencyFQNs;
-
-        // Recursively detect depencency tree
-        //   - Make sure we know about ourselves in the Plugin Chain, but don't update the
-        //     original for subsequent sibling iterations (creates duplicates)!
-        this.hydrateAccessorToFqnChainMap(dependencyAccessorNames, currChain.concat(accessorName));
-      }
+      this.accessorToFqnChainMap[currBehaviorName] = actualDeps;
     }
 
     return this.accessorToFqnChainMap;
   }
 
   /**
-   * Breadth First Search, Post-Order to Instantiate Plugin Instances
+   * Depth First Search, Post-Order to Instantiate Plugin Instances
    */
-  async loadChainMap(pluginNames: string[]): Promise<FqnInstanceMap> {
-    for (let pluginName of pluginNames) {
+  async loadChainMap(pluginNames: Set<string>): Promise<FqnInstanceMap> {
+    for (const pluginName of pluginNames) {
       // Already loading/loaded, skip
       if (this.fqnInstanceMap[pluginName]) {
         continue;
@@ -230,27 +258,29 @@ export default class DependencyManager extends EventEmitter {
     return this.fqnInstanceMap;
   }
 
-  async mapAccessorAliasesToInstances(accessorAliasDefinitions: {
-    [accessorName: string]: string;
-  }): Promise<AccessorAliasInstanceMap> {
-    //FIXME: Missing plugins in the loadMap should probably fail catastrophically!
+  /**
+   * For a Manifest's AccessorName alias mapping, we will retrive the
+   * instances and mirror the alias mapping for the Plugin's access.
+   *
+   * This assumes hydrating the AccessorToFqnChainMap has been performed
+   * to ensure Dependency Resolution will always succeed.
+   */
+  async mapAccessorAliasesToInstances(
+    accessorAliasManifest: Record<string, string>
+  ): Promise<AccessorAliasInstanceMap> {
+    if (!accessorAliasManifest) {
+      return {};
+    }
 
-    const aliasNames = Object.keys(accessorAliasDefinitions);
+    const aliasNames = Object.keys(accessorAliasManifest);
 
-    return aliasNames.reduce<AccessorAliasInstanceMap>((map, alias) => {
-      const pluginNames = this.getFqnsForAccessorName(accessorAliasDefinitions[alias]);
+    return aliasNames.reduce<AccessorAliasInstanceMap>((map, aliasName) => {
+      const behaviorName = accessorAliasManifest[aliasName];
+      const behaviorFqns = this.getFqnsForBehaviorName(behaviorName);
 
-      pluginNames.forEach(pluginName => {
-        if (this.fqnInstanceMap[pluginName]) {
-          map[alias] = map[alias] || [];
-          map[alias].push(this.fqnInstanceMap[pluginName]);
-        } else {
-          //FIXME: Could this even happen? The idea is that a plugin has an accessor
-          // for a plugin that hasn't be considered for load
-          const newError = new DependencyChainError(pluginName, new Error(`No Plugins loaded for Accessor: ${alias}!`));
-          this.fqnFailMap[pluginName] = newError;
-          throw newError;
-        }
+      behaviorFqns.forEach(fqn => {
+        map[aliasName] = map[aliasName] || new Set();
+        map[aliasName].add(this.fqnInstanceMap[fqn]);
       });
 
       return map;
@@ -265,10 +295,10 @@ export default class DependencyManager extends EventEmitter {
         : null;
 
       // Create the instance!
-      const pluginInstance: Base = new (loaderMeta.pluginDefinition as any)({
+      const pluginInstance = new loaderMeta.pluginDefinition({
         host: this.pluginHost,
         manifest: loaderMeta.manifest,
-        accessors: accessorAliasMap
+        accessors: accessorAliasMap ?? undefined
       });
 
       // FIXME: Might need to check if user disabled,
@@ -290,7 +320,7 @@ export default class DependencyManager extends EventEmitter {
     }
   }
 
-  //TODO Finish unloading of plugins thoroughly
+  //FIXME Finish unloading of plugins thoroughly
   async unloadPluginInstance(pluginName: string): Promise<Base> {
     try {
       const pluginInstance = this.fqnInstanceMap[pluginName];
@@ -301,7 +331,7 @@ export default class DependencyManager extends EventEmitter {
 
       delete this.fqnInstanceMap[pluginName];
       delete this.fqnMetaMap[pluginName];
-      // accessorNames.forEach(n => this.behaviourToMetaMap[n].splice(this.behaviourToMetaMap[n].indexOf(n), 1));
+      // accessorNames.forEach(n => this.behaviorToMetaMap[n].splice(this.behaviorToMetaMap[n].indexOf(n), 1));
 
       return pluginInstance;
     } catch (err) {

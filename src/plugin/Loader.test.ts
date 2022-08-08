@@ -102,8 +102,8 @@ describe('PluginLoader', () => {
     depMgr = new DependencyManager(host);
 
     manifest = {
-      accessors: { plug2: 'plugin2-behaviour' },
-      behaviours: ['plugin1-behaviour', 'common1'],
+      accessors: { plug2: 'plugin2-behavior' },
+      behaviors: ['plugin1-behavior', 'common1'],
       name: 'Plugin1',
       pluginPath: 'fakePlugin',
       version: '0.0.1',

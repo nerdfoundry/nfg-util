@@ -15,6 +15,7 @@ export default class Host {
     return _get(SETTINGS, path);
   }
 
+  // eslint-disable-next-line
   setOption(path: string, val: any) {
     _set(SETTINGS, path, val);
   }

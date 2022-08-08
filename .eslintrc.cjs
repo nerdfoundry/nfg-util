@@ -9,7 +9,7 @@ module.exports = {
   },
   overrides: [
     {
-      files: ['*-test.js', '*.spec.js', '__mocks__/*'],
+      files: ['*.test.ts', '*.spec.ts', '*.test.js', '*.spec.js', '__mocks__/*'],
       rules: {
         '@typescript-eslint/no-explicit-any': 'off'
       }

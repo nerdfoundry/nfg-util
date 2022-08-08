@@ -1,545 +1,44 @@
 // Vitest Snapshot v1
 
-exports[`DependencyManager > Build Accessor Chain Map > should build a proper Plugin Dependency tree from Plugin Names 1`] = `
+exports[`DependencyManager > Hydrating Maps > Hydration Resolver Helpers > getAccessorNamesForMetas > should return a unique list of AccessorNames for all provided LoaderMetas 1`] = `
+Set {
+  "plugin2-behavior",
+  "Plugin1-v0.0.1",
+  "plugin4-behavior",
+  "Plugin2-v0.0.1",
+}
+`;
+
+exports[`DependencyManager > Hydrating Maps > Hydration Resolver Helpers > getFqnsForBehaviorName > should return a list of FQNs that satisfy the BehaviorName 1`] = `
+Set {
+  "Plugin1-v0.0.1",
+  "Plugin2-v0.0.1",
+}
+`;
+
+exports[`DependencyManager > Hydrating Maps > hydrateFqnToLoadChainMap > should resolve the dependency chain for a "generic" BehaviorName 1`] = `
 {
-  "Plugin1-v0.0.1": [
+  "Plugin1-v0.0.1": Set {
     "Plugin2-v0.0.1",
-  ],
-  "Plugin3-v0.0.1": [
+  },
+  "Plugin2-v0.0.1": Set {},
+  "common1": Set {
     "Plugin1-v0.0.1",
-    "Plugin4-v0.0.1",
-  ],
-  "Plugin4-v0.0.1": [
     "Plugin2-v0.0.1",
-  ],
-  "plugin4-behaviour": [
-    "Plugin2-v0.0.1",
-  ],
-}
-`;
-
-exports[`DependencyManager > Build Plugin Name Map > should return a named mapping of Plugin Behaviours 1`] = `
-{
-  "Plugin1-v0.0.1": [
-    {
-      "manifest": {
-        "accessors": {
-          "plug2": "plugin2-behaviour",
-        },
-        "behaviours": [
-          "plugin1-behaviour",
-          "common1",
-        ],
-        "name": "Plugin1",
-        "pluginPath": "",
-        "type": "SERVICE",
-        "version": "0.0.1",
-      },
-      "pluginDefinition": [Function],
-    },
-  ],
-  "Plugin2-v0.0.1": [
-    {
-      "manifest": {
-        "behaviours": [
-          "plugin2-behaviour",
-          "common1",
-        ],
-        "name": "Plugin2",
-        "pluginPath": "",
-        "type": "SERVICE",
-        "version": "0.0.1",
-      },
-      "pluginDefinition": [Function],
-    },
-  ],
-  "Plugin3-v0.0.1": [
-    {
-      "manifest": {
-        "accessors": {
-          "plug1": "Plugin1-v0.0.1",
-          "plug4": "plugin4-behaviour",
-        },
-        "behaviours": [
-          "plugin3-behaviour",
-        ],
-        "name": "Plugin3",
-        "pluginPath": "",
-        "type": "SERVICE",
-        "version": "0.0.1",
-      },
-      "pluginDefinition": [Function],
-    },
-  ],
-  "Plugin4-v0.0.1": [
-    {
-      "manifest": {
-        "accessors": {
-          "plug2": "Plugin2-v0.0.1",
-        },
-        "behaviours": [
-          "plugin4-behaviour",
-        ],
-        "name": "Plugin4",
-        "pluginPath": "",
-        "type": "SERVICE",
-        "version": "0.0.1",
-      },
-      "pluginDefinition": [Function],
-    },
-  ],
-  "Plugin6-v0.0.1": [
-    {
-      "manifest": {
-        "accessors": {
-          "cyclic": "Plugin5-v0.0.1",
-        },
-        "behaviours": [
-          "plugin6-behaviour",
-        ],
-        "name": "Plugin6",
-        "pluginPath": "",
-        "type": "SERVICE",
-        "version": "0.0.1",
-      },
-      "pluginDefinition": [Function],
-    },
-  ],
-  "Plugin7-v0.0.1": [
-    {
-      "manifest": {
-        "accessors": {
-          "self": "Plugin7-v0.0.1",
-        },
-        "behaviours": [
-          "plugin7-behaviour",
-        ],
-        "name": "Plugin7",
-        "pluginPath": "",
-        "type": "SERVICE",
-        "version": "0.0.1",
-      },
-      "pluginDefinition": [Function],
-    },
-  ],
-  "common1": [
-    {
-      "manifest": {
-        "accessors": {
-          "plug2": "plugin2-behaviour",
-        },
-        "behaviours": [
-          "plugin1-behaviour",
-          "common1",
-        ],
-        "name": "Plugin1",
-        "pluginPath": "",
-        "type": "SERVICE",
-        "version": "0.0.1",
-      },
-      "pluginDefinition": [Function],
-    },
-    {
-      "manifest": {
-        "behaviours": [
-          "plugin2-behaviour",
-          "common1",
-        ],
-        "name": "Plugin2",
-        "pluginPath": "",
-        "type": "SERVICE",
-        "version": "0.0.1",
-      },
-      "pluginDefinition": [Function],
-    },
-    {
-      "manifest": {
-        "accessors": {
-          "plug2": "plugin2-behaviour",
-        },
-        "behaviours": [
-          "plugin1-behaviour",
-          "common1",
-        ],
-        "name": "Plugin1",
-        "pluginPath": "",
-        "type": "SERVICE",
-        "version": "0.0.1",
-      },
-      "pluginDefinition": [Function],
-    },
-    {
-      "manifest": {
-        "behaviours": [
-          "plugin2-behaviour",
-          "common1",
-        ],
-        "name": "Plugin2",
-        "pluginPath": "",
-        "type": "SERVICE",
-        "version": "0.0.1",
-      },
-      "pluginDefinition": [Function],
-    },
-  ],
-  "plugin1-behaviour": [
-    {
-      "manifest": {
-        "accessors": {
-          "plug2": "plugin2-behaviour",
-        },
-        "behaviours": [
-          "plugin1-behaviour",
-          "common1",
-        ],
-        "name": "Plugin1",
-        "pluginPath": "",
-        "type": "SERVICE",
-        "version": "0.0.1",
-      },
-      "pluginDefinition": [Function],
-    },
-    {
-      "manifest": {
-        "accessors": {
-          "plug2": "plugin2-behaviour",
-        },
-        "behaviours": [
-          "plugin1-behaviour",
-          "common1",
-        ],
-        "name": "Plugin1",
-        "pluginPath": "",
-        "type": "SERVICE",
-        "version": "0.0.1",
-      },
-      "pluginDefinition": [Function],
-    },
-  ],
-  "plugin2-behaviour": [
-    {
-      "manifest": {
-        "behaviours": [
-          "plugin2-behaviour",
-          "common1",
-        ],
-        "name": "Plugin2",
-        "pluginPath": "",
-        "type": "SERVICE",
-        "version": "0.0.1",
-      },
-      "pluginDefinition": [Function],
-    },
-    {
-      "manifest": {
-        "behaviours": [
-          "plugin2-behaviour",
-          "common1",
-        ],
-        "name": "Plugin2",
-        "pluginPath": "",
-        "type": "SERVICE",
-        "version": "0.0.1",
-      },
-      "pluginDefinition": [Function],
-    },
-  ],
-  "plugin3-behaviour": [
-    {
-      "manifest": {
-        "accessors": {
-          "plug1": "Plugin1-v0.0.1",
-          "plug4": "plugin4-behaviour",
-        },
-        "behaviours": [
-          "plugin3-behaviour",
-        ],
-        "name": "Plugin3",
-        "pluginPath": "",
-        "type": "SERVICE",
-        "version": "0.0.1",
-      },
-      "pluginDefinition": [Function],
-    },
-    {
-      "manifest": {
-        "accessors": {
-          "plug1": "Plugin1-v0.0.1",
-          "plug4": "plugin4-behaviour",
-        },
-        "behaviours": [
-          "plugin3-behaviour",
-        ],
-        "name": "Plugin3",
-        "pluginPath": "",
-        "type": "SERVICE",
-        "version": "0.0.1",
-      },
-      "pluginDefinition": [Function],
-    },
-  ],
-  "plugin4-behaviour": [
-    {
-      "manifest": {
-        "accessors": {
-          "plug2": "Plugin2-v0.0.1",
-        },
-        "behaviours": [
-          "plugin4-behaviour",
-        ],
-        "name": "Plugin4",
-        "pluginPath": "",
-        "type": "SERVICE",
-        "version": "0.0.1",
-      },
-      "pluginDefinition": [Function],
-    },
-    {
-      "manifest": {
-        "accessors": {
-          "plug2": "Plugin2-v0.0.1",
-        },
-        "behaviours": [
-          "plugin4-behaviour",
-        ],
-        "name": "Plugin4",
-        "pluginPath": "",
-        "type": "SERVICE",
-        "version": "0.0.1",
-      },
-      "pluginDefinition": [Function],
-    },
-  ],
-  "plugin5-behaviour": [
-    {
-      "manifest": {
-        "accessors": {
-          "cyclic": "Plugin6-v0.0.1",
-        },
-        "behaviours": [
-          "plugin5-behaviour",
-        ],
-        "name": "Plugin5",
-        "pluginPath": "",
-        "type": "SERVICE",
-        "version": "0.0.1",
-      },
-      "pluginDefinition": [Function],
-    },
-  ],
-  "plugin6-behaviour": [
-    {
-      "manifest": {
-        "accessors": {
-          "cyclic": "Plugin5-v0.0.1",
-        },
-        "behaviours": [
-          "plugin6-behaviour",
-        ],
-        "name": "Plugin6",
-        "pluginPath": "",
-        "type": "SERVICE",
-        "version": "0.0.1",
-      },
-      "pluginDefinition": [Function],
-    },
-  ],
-  "plugin7-behaviour": [
-    {
-      "manifest": {
-        "accessors": {
-          "self": "Plugin7-v0.0.1",
-        },
-        "behaviours": [
-          "plugin7-behaviour",
-        ],
-        "name": "Plugin7",
-        "pluginPath": "",
-        "type": "SERVICE",
-        "version": "0.0.1",
-      },
-      "pluginDefinition": [Function],
-    },
-  ],
-}
-`;
-
-exports[`DependencyManager > Loading Plugin Definitions > should load the entire Plugin Dependency tree into a single Promise result 1`] = `
-pluginDef {
-  "accessors": null,
-  "enabled": false,
-  "host": {
-    "getOption": [MockFunction spy],
-    "setOption": [MockFunction spy],
-  },
-  "manifest": {
-    "behaviours": [
-      "plugin2-behaviour",
-      "common1",
-      "Plugin2",
-    ],
-    "name": "Plugin2",
-    "pluginPath": "",
-    "type": "SERVICE",
-    "version": "0.0.1",
-  },
-  "status": 0,
-}
-`;
-
-exports[`DependencyManager > Loading Plugin Definitions > should load the entire Plugin Dependency tree into a single Promise result 2`] = `
-pluginDef {
-  "accessors": {
-    "plug2": [
-      pluginDef {
-        "accessors": {},
-        "enabled": false,
-        "host": {
-          "getOption": [MockFunction spy],
-          "setOption": [MockFunction spy],
-        },
-        "manifest": {
-          "behaviours": [
-            "plugin2-behaviour",
-            "common1",
-            "Plugin2",
-          ],
-          "name": "Plugin2",
-          "pluginPath": "",
-          "type": "SERVICE",
-          "version": "0.0.1",
-        },
-        "status": 0,
-      },
-    ],
-  },
-  "enabled": false,
-  "host": {
-    "getOption": [MockFunction spy],
-    "setOption": [MockFunction spy],
-  },
-  "manifest": {
-    "accessors": {
-      "plug2": "plugin2-behaviour",
-    },
-    "behaviours": [
-      "plugin1-behaviour",
-      "common1",
-      "Plugin1",
-    ],
-    "name": "Plugin1",
-    "pluginPath": "",
-    "type": "SERVICE",
-    "version": "0.0.1",
-  },
-  "status": 0,
-}
-`;
-
-exports[`DependencyManager > Loading a Chain Map > should load an entire Chain Map from the Plugin Name Map 1`] = `
-{
-  "Plugin1-v0.0.1": pluginDef {
-    "accessors": {},
-    "enabled": false,
-    "host": {
-      "getOption": [MockFunction spy],
-      "setOption": [MockFunction spy],
-    },
-    "manifest": {
-      "accessors": {
-        "plug2": "plugin2-behaviour",
-      },
-      "behaviours": [
-        "plugin1-behaviour",
-        "common1",
-        "Plugin1",
-      ],
-      "name": "Plugin1",
-      "pluginPath": "",
-      "type": "SERVICE",
-      "version": "0.0.1",
-    },
-    "status": 0,
-  },
-  "Plugin2-v0.0.1": pluginDef {
-    "accessors": {},
-    "enabled": false,
-    "host": {
-      "getOption": [MockFunction spy],
-      "setOption": [MockFunction spy],
-    },
-    "manifest": {
-      "behaviours": [
-        "plugin2-behaviour",
-        "common1",
-        "Plugin2",
-      ],
-      "name": "Plugin2",
-      "pluginPath": "",
-      "type": "SERVICE",
-      "version": "0.0.1",
-    },
-    "status": 0,
-  },
-  "Plugin3-v0.0.1": pluginDef {
-    "accessors": {},
-    "enabled": false,
-    "host": {
-      "getOption": [MockFunction spy],
-      "setOption": [MockFunction spy],
-    },
-    "manifest": {
-      "accessors": {
-        "plug1": "Plugin1-v0.0.1",
-        "plug4": "plugin4-behaviour",
-      },
-      "behaviours": [
-        "plugin3-behaviour",
-        "Plugin3",
-      ],
-      "name": "Plugin3",
-      "pluginPath": "",
-      "type": "SERVICE",
-      "version": "0.0.1",
-    },
-    "status": 0,
-  },
-  "Plugin4-v0.0.1": pluginDef {
-    "accessors": {},
-    "enabled": false,
-    "host": {
-      "getOption": [MockFunction spy],
-      "setOption": [MockFunction spy],
-    },
-    "manifest": {
-      "accessors": {
-        "plug2": "Plugin2-v0.0.1",
-      },
-      "behaviours": [
-        "plugin4-behaviour",
-        "Plugin4",
-      ],
-      "name": "Plugin4",
-      "pluginPath": "",
-      "type": "SERVICE",
-      "version": "0.0.1",
-    },
-    "status": 0,
   },
 }
 `;
 
-exports[`DependencyManager > Loading a Chain Map > should load an entire Chain Map from the Plugin Name Map 2`] = `
+exports[`DependencyManager > Hydrating Maps > hydrateFqnToMetaMap > should accept newly discovered Loader Metas, mapped by FQN 1`] = `
 {
   "Plugin1-v0.0.1": {
     "manifest": {
       "accessors": {
-        "plug2": "plugin2-behaviour",
+        "plug2": "plugin2-behavior",
       },
-      "behaviours": [
-        "plugin1-behaviour",
+      "behaviors": [
+        "plugin1-behavior",
         "common1",
-        "Plugin1",
       ],
       "name": "Plugin1",
       "pluginPath": "",
@@ -550,10 +49,9 @@ exports[`DependencyManager > Loading a Chain Map > should load an entire Chain M
   },
   "Plugin2-v0.0.1": {
     "manifest": {
-      "behaviours": [
-        "plugin2-behaviour",
+      "behaviors": [
+        "plugin2-behavior",
         "common1",
-        "Plugin2",
       ],
       "name": "Plugin2",
       "pluginPath": "",
@@ -566,11 +64,10 @@ exports[`DependencyManager > Loading a Chain Map > should load an entire Chain M
     "manifest": {
       "accessors": {
         "plug1": "Plugin1-v0.0.1",
-        "plug4": "plugin4-behaviour",
+        "plug4": "plugin4-behavior",
       },
-      "behaviours": [
-        "plugin3-behaviour",
-        "Plugin3",
+      "behaviors": [
+        "plugin3-behavior",
       ],
       "name": "Plugin3",
       "pluginPath": "",
@@ -584,9 +81,8 @@ exports[`DependencyManager > Loading a Chain Map > should load an entire Chain M
       "accessors": {
         "plug2": "Plugin2-v0.0.1",
       },
-      "behaviours": [
-        "plugin4-behaviour",
-        "Plugin4",
+      "behaviors": [
+        "plugin4-behavior",
       ],
       "name": "Plugin4",
       "pluginPath": "",
@@ -598,17 +94,72 @@ exports[`DependencyManager > Loading a Chain Map > should load an entire Chain M
 }
 `;
 
-exports[`DependencyManager > Loading a Chain Map > should properly identify individual failed plugins upon loading 1`] = `
+exports[`DependencyManager > Hydrating Maps > hydrateFqnToMetaMap > should detect already loaded FQNs and build a failmap 1`] = `
 {
-  "Plugin2-v0.0.1": [Error: [DependencyChainError] - Plugin2-v0.0.1 has failed an entire dependency chain - Test Error],
+  "Plugin1-v0.0.1": [Error: [PluginLoaded] - This Plugin Name & Version are already Loaded. To load the Manifest being used now the previous Plugin must be Unloaded! Plugin FQN: Plugin1-v0.0.1],
 }
 `;
 
-exports[`DependencyManager > Utilities > should return a list of all Accessors within a group of Plugins 1`] = `
-[
-  "Plugin1-v0.0.1",
-  "Plugin2-v0.0.1",
-  "plugin2-behaviour",
-  "plugin4-behaviour",
-]
+exports[`DependencyManager > Loading the Dependency Chain > Mapping Accessor Aliases > should handle a Manifest missing an Alias Mapping 1`] = `{}`;
+
+exports[`DependencyManager > Loading the Dependency Chain > Mapping Accessor Aliases > should map the FQN instances to the alias names defined in a Manifest's Alias Mapping 1`] = `
+{
+  "plug2": Set {
+    pluginDef {
+      "accessors": {},
+      "enabled": false,
+      "host": {
+        "getOption": [MockFunction spy] {
+          "calls": [
+            [
+              "Plugins.Plugin2.enabled",
+            ],
+          ],
+          "results": [
+            {
+              "type": "return",
+              "value": undefined,
+            },
+          ],
+        },
+        "setOption": [MockFunction spy],
+      },
+      "manifest": {
+        "behaviors": [
+          "plugin2-behavior",
+          "common1",
+          "Plugin2",
+        ],
+        "name": "Plugin2",
+        "pluginPath": "",
+        "type": "SERVICE",
+        "version": "0.0.1",
+      },
+      "status": 0,
+    },
+  },
+}
+`;
+
+exports[`DependencyManager > Loading the Dependency Chain > Plugin Factory/Instantiation > should instantiate a long-starting Plugin 1`] = `
+pluginDef {
+  "accessors": {},
+  "enabled": false,
+  "host": {
+    "getOption": [MockFunction spy],
+    "setOption": [MockFunction spy],
+  },
+  "manifest": {
+    "behaviors": [
+      "plugin2-behavior",
+      "common1",
+      "Plugin2",
+    ],
+    "name": "Plugin2",
+    "pluginPath": "",
+    "type": "SERVICE",
+    "version": "0.0.1",
+  },
+  "status": 0,
+}
 `;

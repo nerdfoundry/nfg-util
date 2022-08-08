@@ -4,10 +4,10 @@ exports[`PluginLoader > Plugin Scanning > should find all Plugins in a Scan Dire
 [
   {
     "accessors": {
-      "plug2": "plugin2-behaviour",
+      "plug2": "plugin2-behavior",
     },
-    "behaviours": [
-      "plugin1-behaviour",
+    "behaviors": [
+      "plugin1-behavior",
       "common1",
     ],
     "name": "Plugin1",
@@ -17,10 +17,10 @@ exports[`PluginLoader > Plugin Scanning > should find all Plugins in a Scan Dire
   },
   {
     "accessors": {
-      "plug2": "plugin2-behaviour",
+      "plug2": "plugin2-behavior",
     },
-    "behaviours": [
-      "plugin1-behaviour",
+    "behaviors": [
+      "plugin1-behavior",
       "common1",
     ],
     "name": "Plugin1",
@@ -35,10 +35,10 @@ exports[`PluginLoader > Plugin Scanning > should find all Plugins in all Scan Di
 [
   {
     "accessors": {
-      "plug2": "plugin2-behaviour",
+      "plug2": "plugin2-behavior",
     },
-    "behaviours": [
-      "plugin1-behaviour",
+    "behaviors": [
+      "plugin1-behavior",
       "common1",
     ],
     "name": "Plugin1",

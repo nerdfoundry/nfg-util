@@ -50,8 +50,8 @@ export default class Loader {
     const loaderInfos: LoaderMeta[] = [];
 
     for (let idx = 0; idx < pluginManifests.length; idx++) {
-      let manifest = pluginManifests[idx];
-      let pluginDefinition = await import(manifest.pluginPath);
+      const manifest = pluginManifests[idx];
+      const pluginDefinition = await import(manifest.pluginPath);
 
       loaderInfos.push({
         manifest,
