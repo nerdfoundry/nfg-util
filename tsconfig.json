@@ -4,8 +4,8 @@
     "files": true
   },
 
-  "include": ["src/**/*", "tests/**/*", "__mocks__/**/*"],
-  "exclude": ["node_modules", "dist"],
+  "include": ["src/**/*", "tests/**/*"],
+  "exclude": ["node_modules", "dist", "__mocks__/**/*"],
 
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,

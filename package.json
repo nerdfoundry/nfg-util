@@ -1,11 +1,14 @@
 {
   "name": "@nfg/util",
   "description": "Utility Library for NFG products",
-  "version": "0.0.1",
+  "version": "0.0.2-6",
   "license": "MIT",
   "author": "Codex <nfg.codex@outlook.com>",
   "main": "./dist/index.js",
   "type": "module",
+  "bin": {
+    "nfg-build": "./.scripts/build.mts"
+  },
   "scripts": {
     "docker-compose": ".scripts/docker-compose.sh",
     "clean": "rimraf ./dist",
@@ -14,49 +17,46 @@
     "preprod": "NODE_ENV=development npm i --force && npm run clean",
     "dev": "NODE_ENV=development concurrently -r 'npm:dev:*'",
     "dev:bundle": "EXTERNALS=\"./node_modules*\" FORCEBUILDONLY=1 RUNTIMEPLATFORM=node FILESRC=index.ts nodemon -e ts,js,mjs,mts --watch ./src --exec \".scripts/build.mts\"",
-    "dev:types": "tsc --noEmit",
+    "dev:types": "tsc --emitDeclarationOnly --declaration",
     "dev-build": "NODE_ENV=development concurrently -r 'npm:dev-build:*'",
     "dev-build:bundle": "EXTERNALS=\"./node_modules*\" FORCEBUILDONLY=1 RUNTIMEPLATFORM=node FILESRC=index.ts .scripts/build.mts",
     "dev-build:types": "tsc --emitDeclarationOnly --declaration",
     "prod": "NODE_ENV=production concurrently -r 'npm:prod:*'",
     "prod:bundle": "EXTERNALS=\"./node_modules*\" RUNTIMEPLATFORM=node FILESRC=index.ts .scripts/build.mts",
     "prod:types": "tsc --emitDeclarationOnly --declaration",
+    "publish:npmjs": "npm run prod && npm version prerelease && npm publish",
     "test": "vitest --coverage",
     "test:debug": "node --inspect-brk=0.0.0.0:9229 ./node_modules/vitest/vitest.mjs --threads false",
     "lint": "eslint ."
   },
-  "devDependencies": {
-    "@chialab/esbuild-plugin-env": "^0.16.0",
-    "@chialab/esbuild-plugin-html": "^0.16.3",
+  "dependencies": {
     "@types/debug": "^4.1.7",
     "@types/lodash.get": "^4.4.7",
     "@types/lodash.set": "^4.3.7",
-    "@types/lodash.uniq": "^4.5.7",
+    "c8": "^7.12.0",
+    "debug": "^4.3.4",
+    "electron": "^20.0.1",
+    "lodash.get": "^4.4.2",
+    "lodash.set": "^4.3.2"
+  },
+  "peerDependencies": {
+    "@chialab/esbuild-plugin-env": "^0.16.0",
+    "@chialab/esbuild-plugin-html": "^0.16.3",
     "@types/node": "^18.6.3",
     "@typescript-eslint/eslint-plugin": "^5.32.0",
     "@typescript-eslint/parser": "^5.32.0",
-    "c8": "^7.12.0",
     "concurrently": "^7.3.0",
-    "debug": "^4.3.4",
-    "esbuild": "^0.14.53",
     "esbuild-copy-static-files": "^0.1.0",
     "esbuild-plugin-sass": "^1.0.1",
+    "esbuild": "^0.14.53",
     "eslint": "^8.21.0",
     "nodemon": "^2.0.19",
+    "rimraf": "^3.0.2",
     "ts-node": "^10.9.1",
     "typescript": "^4.7.4",
     "vitest": "^0.20.3"
   },
-  "dependencies": {
-    "electron": "^20.0.1",
-    "lodash.get": "^4.4.2",
-    "lodash.set": "^4.3.2",
-    "lodash.uniq": "^4.5.0"
-  },
   "______________________________": "------------------------------",
-  "exports": {
-    "./*": "./dist/*"
-  },
   "keywords": [
     "nerdfoundry",
     "nerdfoundrygaming",
@@ -71,10 +71,17 @@
     "access": "public",
     "scope": "@nfg"
   },
+  "exports": {
+    "./prettier": "./.prettierrc.cjs",
+    "./*": "./dist/*"
+  },
   "typesVersions": {
     "*": {
+      "tsconfig": [
+        "./tsconfig.json"
+      ],
       "*": [
-        "dist/*"
+        "./dist/*"
       ]
     }
   }
