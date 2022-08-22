@@ -1,13 +1,14 @@
 {
   "name": "@nfg/util",
   "description": "Utility Library for NFG products",
-  "version": "0.0.2-6",
+  "version": "0.0.2-7",
   "license": "MIT",
   "author": "Codex <nfg.codex@outlook.com>",
   "main": "./dist/index.js",
   "type": "module",
   "bin": {
-    "nfg-build": "./.scripts/build.mts"
+    "nfg-build": "./.scripts/build.mts",
+    "nfg-compose": "./.scripts/docker-compose.sh"
   },
   "scripts": {
     "docker-compose": ".scripts/docker-compose.sh",
