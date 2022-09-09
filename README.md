@@ -10,12 +10,6 @@ For Active Development:
 docker-compose -f ./docker-compose.yml -f ./docker-compose.dev.yml up
 ```
 
-For a Development bundle:
-
-```sh
-docker-compose -f ./docker-compose.yml -f ./docker-compose.dev-build.yml up
-```
-
 For a Production bundle:
 
 ```sh

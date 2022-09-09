@@ -1,0 +1,28 @@
+version: '3.7'
+
+services:
+  nfg-util:
+    volumes:
+      - ./.docker/.npmrc-localPublish:/app/.npmrc
+    networks:
+      - registry
+
+  npm-registry:
+    container_name: npm-registry
+    image: verdaccio/verdaccio
+    volumes:
+      # Make sure config file is chown 10001:65535
+      - ./.docker/verdaccio/config.yaml:/verdaccio/conf/config.yaml
+      - verdaccio-storage:/verdaccio/storage
+      - verdaccio-plugins:/verdaccio/plugins
+    ports:
+      - 4873:4873
+    networks:
+      - registry
+
+volumes:
+  verdaccio-storage:
+  verdaccio-plugins:
+
+networks:
+  registry:

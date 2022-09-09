@@ -11,4 +11,3 @@ services:
     stdin_open: true
     volumes:
       - '.:/app'
-      - '${HOME}/.npmrc-automate_nfgutils:/app/.npmrc'
