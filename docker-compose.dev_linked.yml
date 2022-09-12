@@ -21,8 +21,8 @@ services:
       - registry
 
 volumes:
-  verdaccio-storage:
   verdaccio-plugins:
+  verdaccio-storage:
 
 networks:
   registry:
