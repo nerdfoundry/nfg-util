@@ -3,7 +3,7 @@ version: '3.7'
 services:
   nfg-util:
     volumes:
-      - ./.docker/.npmrc-localPublish:/app/.npmrc
+      - ./.docker/.npmrc-localRegistry:/app/.npmrc
     networks:
       - registry
 

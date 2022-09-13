@@ -8,42 +8,35 @@
   "type": "module",
   "bin": {
     "nfg-builder": "./.scripts/builder.mts",
-    "nfg-compose": "./.scripts/compose.mjs",
-    "nfg-dev": "./.scripts/run-dev.sh",
-    "nfg-dev_linked": "./.scripts/run-dev_linked.sh",
-    "nfg-test": "./.scripts/run-test.sh",
-    "nfg-prod": "./.scripts/run-prod.sh"
+    "nfg-compose": "./.scripts/compose.mjs"
   },
   "scripts": {
-    "docker-compose": ".scripts/compose.mjs",
     "clean": "rimraf ./dist",
     "predev": "npm i && npm run clean",
     "preprod": "NODE_ENV=development npm i && npm run clean",
-    "_typecheck": "tsc --emitDeclarationOnly --declaration",
-    "dev": "NODE_ENV=development concurrently -r 'npm:dev:normal:*'",
-    "dev:normal:bundle": "EXTERNALS=\"./node_modules*\" FORCEBUILDONLY=1 RUNTIMEPLATFORM=node FILESRC=index.ts nodemon -e ts,js,mjs,mts --watch ./src --exec \".scripts/builder.mts\"",
-    "dev:normal:types": "npm run _typecheck",
-    "predev:build": "npm i && npm run clean",
-    "dev:build": "NODE_ENV=development concurrently -r 'npm:dev:build:*'",
-    "dev:build:bundle": "EXTERNALS=\"./node_modules*\" FORCEBUILDONLY=1 RUNTIMEPLATFORM=node FILESRC=index.ts .scripts/builder.mts",
-    "dev:build:types": "npm run _typecheck",
-    "prod": "NODE_ENV=production concurrently -r 'npm:prod:*'",
-    "prod:bundle": "EXTERNALS=\"./node_modules*\" RUNTIMEPLATFORM=node FILESRC=index.ts .scripts/builder.mts",
-    "prod:types": "npm run _typecheck",
-    "publish:npmjs": "npm run prod && npm version prerelease && npm publish",
+    "build:types": "tsc --emitDeclarationOnly --declaration",
+    "dev": "NODE_ENV=development concurrently -r 'npm:dev:*'",
     "test": "vitest --coverage",
     "test:debug": "node --inspect-brk=0.0.0.0:9229 ./node_modules/vitest/vitest.mjs --threads false",
+    "prod": "NODE_ENV=production concurrently -r 'npm:prod:*'",
+    "dev:bundle": "EXTERNALS=\"./node_modules*\" FORCEBUILDONLY=1 RUNTIMEPLATFORM=node FILESRC=index.ts nodemon -e ts,js,mjs,mts --watch ./src --exec \".scripts/builder.mts\"",
+    "dev:types": "npm run build:types",
+    "prod:bundle": "EXTERNALS=\"./node_modules*\" RUNTIMEPLATFORM=node FILESRC=index.ts .scripts/builder.mts",
+    "prod:types": "npm run build:types",
+    "publish:registry": "npm run prod && npm version prerelease && npm publish",
     "lint": "eslint ."
   },
   "dependencies": {
-    "@types/debug": "^4.1.7",
-    "@types/lodash.get": "^4.4.7",
-    "@types/lodash.set": "^4.3.7",
     "c8": "^7.12.0",
     "debug": "^4.3.4",
     "electron": "^20.0.1",
     "lodash.get": "^4.4.2",
     "lodash.set": "^4.3.2"
+  },
+  "devDependencies": {
+    "@types/debug": "^4.1.7",
+    "@types/lodash.get": "^4.4.7",
+    "@types/lodash.set": "^4.3.7"
   },
   "peerDependencies": {
     "@chialab/esbuild-plugin-env": "^0.16.0",
