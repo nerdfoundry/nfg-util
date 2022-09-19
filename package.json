@@ -23,7 +23,7 @@
     "dev:types": "npm run build:types",
     "prod:bundle": "EXTERNALS=\"./node_modules*\" RUNTIMEPLATFORM=node FILESRC=index.ts .scripts/builder.mts",
     "prod:types": "npm run build:types",
-    "publish:registry": "npm run prod && npm version prerelease && npm publish",
+    "publish:registry": "npm run prod && npm version prerelease && npm publish && touch .trigger-nfg-util",
     "lint": "eslint ."
   },
   "dependencies": {
