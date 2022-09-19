@@ -1,7 +1,7 @@
 {
   "name": "@nfg/util",
   "description": "Utility Library for NFG products",
-  "version": "0.0.2-8",
+  "version": "0.0.2-11",
   "license": "MIT",
   "author": "Codex <nfg.codex@outlook.com>",
   "main": "./dist/index.js",
