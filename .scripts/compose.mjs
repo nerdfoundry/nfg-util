@@ -6,7 +6,7 @@
  * Presents the user with possible options to proceed and keeps the container alive.
  */
 
-import { $ } from 'zx/core';
+import { $, chalk, echo } from 'zx';
 
 $.verbose = false;
 

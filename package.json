@@ -1,7 +1,7 @@
 {
   "name": "@nfg/util",
   "description": "Utility Library for NFG products",
-  "version": "0.0.2-11",
+  "version": "0.0.2-0",
   "license": "MIT",
   "author": "Codex <nfg.codex@outlook.com>",
   "main": "./dist/index.js",
@@ -11,6 +11,8 @@
     "nfg-compose": "./.scripts/compose.mjs"
   },
   "scripts": {
+    "postinstall": "npm run _trigger",
+    "_trigger": "echo `date` > .trigger_nfg_util",
     "clean": "rimraf ./dist",
     "predev": "npm i && npm run clean",
     "preprod": "NODE_ENV=development npm i && npm run clean",
@@ -23,20 +25,21 @@
     "dev:types": "npm run build:types",
     "prod:bundle": "EXTERNALS=\"./node_modules*\" RUNTIMEPLATFORM=node FILESRC=index.ts .scripts/builder.mts",
     "prod:types": "npm run build:types",
-    "publish:registry": "npm run prod && npm version prerelease && npm publish && touch .trigger-nfg-util",
+    "publish:registry": "npm run prod && npm version prerelease && npm publish && npm run _trigger",
     "lint": "eslint ."
   },
   "dependencies": {
     "c8": "^7.12.0",
     "debug": "^4.3.4",
-    "electron": "^20.0.1",
+    "electron": "^22.0.0",
     "lodash.get": "^4.4.2",
     "lodash.set": "^4.3.2"
   },
   "devDependencies": {
     "@types/debug": "^4.1.7",
     "@types/lodash.get": "^4.4.7",
-    "@types/lodash.set": "^4.3.7"
+    "@types/lodash.set": "^4.3.7",
+    "chalk": "^5.1.2"
   },
   "peerDependencies": {
     "@chialab/esbuild-plugin-env": "^0.16.0",
