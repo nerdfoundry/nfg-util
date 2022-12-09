@@ -5,3 +5,5 @@ services:
     command: 'npm run prod'
     environment:
       - NODE_ENV=production
+    # volumes:
+    #   - '${HOME}/.npmrc-automate_nfgutils:/app/.npmrc'

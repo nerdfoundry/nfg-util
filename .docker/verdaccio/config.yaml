@@ -1,0 +1,47 @@
+storage: /verdaccio/storage/data
+plugins: /verdaccio/plugins
+
+# https://verdaccio.org/docs/webui
+web:
+  title: NFG Verdaccio Instance
+  gravatar: false
+  darkMode: true
+  login: false
+  showFooter: false
+  showInfo: false
+
+auth:
+  htpasswd:
+    file: /verdaccio/storage/htpasswd
+
+# https://verdaccio.org/docs/configuration#uplinks
+# a list of other known repositories we can talk to
+uplinks:
+  npmjs:
+    url: https://registry.npmjs.org/
+
+# Learn how to protect your packages
+# https://verdaccio.org/docs/protect-your-dependencies/
+# https://verdaccio.org/docs/configuration#packages
+packages:
+  '@*/*':
+    # scoped packages
+    access: $all
+    publish: $all
+    unpublish: $all
+    proxy: npmjs
+
+  '**':
+    access: $all
+    publish: $all
+    unpublish: $all
+    proxy: npmjs
+
+server:
+  keepAliveTimeout: 60
+
+middlewares:
+  audit:
+    enabled: true
+
+logs: { type: stdout, format: pretty, level: http }

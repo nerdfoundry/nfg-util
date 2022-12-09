@@ -7,4 +7,4 @@ services:
       - NODE_ENV=development
       - VERBOSE=1
     ports:
-      - 9229:9229
+      - 9220:9229
